@@ -48,7 +48,7 @@ __config = __read_config(__args.config_file)
 
 # Exports:
 
-APP = Flask(__name__)
+APP = Flask(__name__, static_folder=os.path.join(os.getcwd(), "static"))
 
 def start():
 	APP.run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
@@ -71,7 +71,7 @@ __DBConnection = __DBConnectionMod.ConnectionClass(*(__config["DBParameters"]))
 if __config["ServeCWD"]:
 	@APP.route('/')
 	def index():
-		return send_from_directory('.', 'index.html')
+		return send_from_directory(os.getcwd(), 'index.html')
 
 @APP.route('/add/topic', methods=["POST"])
 def addTopic():
