@@ -1,5 +1,7 @@
 # fdbk
 
+[![Build Status](https://travis-ci.org/kangasta/fdbk.svg?branch=master)](https://travis-ci.org/kangasta/fdbk)
+
 Backend and DB wrapper for feedback collection system.
 
 ## Usage
