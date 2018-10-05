@@ -1,0 +1,21 @@
+{
+  "topic":"APA",
+  "description": "Taste review for the APA served in todays tasting.",
+  "fields": [
+    "stars",
+    "text"
+  ],
+  "units": [
+    "stars",
+    "text"
+  ],
+  "summary": [
+	"average",
+	null
+  ],
+  "visualization": [
+	"percent-stacked-bar",
+	null
+  ],
+  "allow_api_submissions": true
+}
