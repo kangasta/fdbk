@@ -1,0 +1,19 @@
+language: python
+python:
+- '2.7'
+- '3.5'
+- '3.6'
+- 3.6-dev
+- 3.7-dev
+install:
+- pip install -r requirements.txt
+script:
+- python -m unittest discover -s fdbk/tst/
+deploy:
+  provider: pypi
+  user: kangasta
+  password:
+    secure: FRfx2+/AV+m9MMLsiRzsXtQpI1EYTMMpjhWDRqD9R2Xmx/MeIBHypuuRkMeWlmdHLX+AvmkhPwinqQlqIsLLamGSXr3onsL0ZQChFrL73IvXdgP5nQpGweVLd3yrMJXO07wT+KmvUzqBFVtxWuZj9nPnSgKJowUwhjHlKWmXP0tnyqgRT1xDngFUDMjM3jJskB7kwnAg7sGKy5YZJI7U+C2arIcYoDpYLTXIQF10NQdRQjk5tiu27+oTO+xcfFqEeb4H6OWzFgJmPwcEUG5OrABXgpXqM6Iv+mII+rExpcIvoxu4g354IzIdAF5Olz3aeEvQeCJT48j3pFAYdJyM5jD3mvKqVO1X8rsZO9IIFWPJjLNe1VbnU6IoFvQeG3UXTu9Lhpy22oPBqJkw0esoz1UcDKaAHljNsb89jm1PeudPhI++TC8KoVdG8tVWLwy+Df0pXSxhPwYfnPwHhbB6Ov/a67UIysTgrvHyQuBSWHWKhNEf1HBo/C5pXspEzHsDKdLllDtH3Xcmngrb7cFA31SaFW3nZ4dfLy9qZRNvi+XAwmYCQlZruiTN2Sy9cqOQ6yeM4NCd92FSQLBmPq8WJlZpuV8foeQszeZ3kmm7C6QVFijboF4vvj75RP60clIdeFj6IUOJRCiRBBgPHnjSxYlaKEuIWJ31eXOesRS8DbA=
+  on:
+    tags: true
+    python: 3.6
