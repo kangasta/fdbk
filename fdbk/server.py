@@ -14,6 +14,7 @@ __default_config = {
 	"DBParameters": [],
 	"AllowedActions": [
 		"addData",
+		"addTopic",
 		"getData",
 		"getTopics",
 		"getTopic"
@@ -77,7 +78,7 @@ if __config["ServeCWD"]:
 def addTopic():
 	if "addTopic" not in __config["AllowedActions"]:
 		return jsonify(__ActionNotAllowedJSON), 403
-	if __config["AddTokens"] and ("token" not in request.args or request.args["token"] not in __config["AddTokens"]):
+	if "AddTokens" in __config and __config["AddTokens"] and ("token" not in request.args or request.args["token"] not in __config["AddTokens"]):
 		return jsonify(__InvalidTokenJSON), 403
 	json_in = request.get_json()
 
@@ -106,7 +107,7 @@ def addTopic():
 def addData(topic):
 	if "addData" not in __config["AllowedActions"]:
 		return jsonify(__ActionNotAllowedJSON), 403
-	if __config["AddTokens"] and ("token" not in request.args or request.args["token"] not in __config["AddTokens"]):
+	if "AddTokens" in __config and __config["AddTokens"] and ("token" not in request.args or request.args["token"] not in __config["AddTokens"]):
 		return jsonify(__InvalidTokenJSON), 403
 	if not __DBConnection.getTopic(topic)["allow_api_submissions"]:
 		return jsonify({
