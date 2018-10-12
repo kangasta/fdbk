@@ -17,7 +17,7 @@ class MongoConnection(DBConnection):
 			db.authenticate(self.__username, self.__password, source=self.__auth_source)
 		return db
 
-	def addTopic(self, topic, description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
+	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
 		with MongoClient(self.__mongo_url) as client:
 			db = self.__get_db(client)
 
@@ -26,6 +26,7 @@ class MongoConnection(DBConnection):
 
 			db["topics"].insert({
 				"topic": topic,
+				"type": type_str,
 				"description": description,
 				"fields": fields,
 				"units": units,
