@@ -28,19 +28,19 @@ class DictConnectionTest(TestCase):
 
 	def test_cannot_add_data_with_non_matching_number_of_fields(self):
 		C = DictConnection()
-		C.addTopic("topic", "description", ["number"])
+		C.addTopic("topic", description="description", fields=["number"])
 		with self.assertRaises(ValueError):
 			C.addData("topic", {"key1": "value1", "key2": "value2"})
 
 	def test_cannot_add_data_with_non_matching_fields(self):
 		C = DictConnection()
-		C.addTopic("topic", "description", ["number"])
+		C.addTopic("topic", description="description", fields=["number"])
 		with self.assertRaises(ValueError):
 			C.addData("topic", {"key": "value"})
 
 	def test_add_data_affects_get_data_output(self):
 		C = DictConnection()
-		C.addTopic("topic", "description", ["number"])
+		C.addTopic("topic", description="description", fields=["number"])
 		C.addData("topic", {"number": 3})
 		self.assertEqual(C.getData("topic")[0]["number"], 3)
 		self.assertEqual(len(C.getData("topic")), 1)

@@ -3,6 +3,7 @@ class DBConnection(object):
 	'''
 	TOPIC_FIELDS = [
 		"topic",
+		"type",
 		"description",
 		"fields",
 		"units",
@@ -11,11 +12,12 @@ class DBConnection(object):
 		"allow_api_submissions"
 	]
 
-	def addTopic(self, topic, description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
+	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
 		'''Adds new topic to DB.
 
 		Args:
 			topic: Name of the topic.
+			type_str: Type of the topic, for example 'form' or 'sensor'.
 			description: Description of the topic.
 			fields: List of data field names included in the topic.
 			units: List of units for corresponding field.
