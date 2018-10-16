@@ -2,7 +2,7 @@ class DBConnection(object):
 	'''Base class for DB connections.
 	'''
 	SUMMARY_FUNCS = {
-		"average": lambda data, field: sum(i/len(data) for i in (a[field] for a in data)),
+		"average": lambda data, field: sum(i/float(len(data)) for i in (a[field] for a in data)),
 		None: lambda data, field: None
 	}
 
