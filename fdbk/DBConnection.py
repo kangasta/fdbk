@@ -1,6 +1,20 @@
 class DBConnection(object):
 	'''Base class for DB connections.
 	'''
+	SUMMARY_FUNCS = {
+		"average": lambda data, field: sum(i/len(data) for i in (a[field] for a in data)),
+		None: lambda data, field: None
+	}
+
+	VISUALIZATION_FUNCS = {
+		"bittendonut": lambda data, field: {
+			"type": "bittendonut",
+			"data": [[a[field] for a in data].count(label) for label in set((a[field] for a in data))],
+			"labels": list(set((a[field] for a in data)))
+		},
+		None: lambda data, field: None
+	}
+
 	TOPIC_FIELDS = [
 		"topic",
 		"type",
@@ -84,5 +98,45 @@ class DBConnection(object):
 			KeyError: Topic does not exist in DB
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
+
+	def getSummary(self, topic):
+		'''Get summary of the topic data
+
+		Args:
+			topic: Name of the topic to get the summary of
+
+		Returns:
+			Dictionary with summary of the topic
+
+		Raises:
+			KeyError: Topic does not exist in DB
+		'''
+		data_d = self.getData(topic)
+		topic_d = self.getTopic(topic)
+
+		summary_d = {
+			"topic": topic_d["topic"],
+			"description": topic_d["description"],
+			"units": topic_d["units"],
+			"num_entries": len(data_d),
+			"summaries": [],
+			"visualizations": [],
+			"warnings": []
+		}
+
+		for i,field in enumerate(topic_d["fields"]):
+			try:
+				summary_d["summaries"].append(self.SUMMARY_FUNCS[topic_d["summary"][i]](data_d, field))
+			except KeyError:
+				summary_d["warnings"].append("The requested summary method '" + topic_d["summary"][i] + "' is not supported.")
+				summary_d["summaries"].append(None)
+
+			try:
+				summary_d["visualizations"].append(self.VISUALIZATION_FUNCS[topic_d["visualization"][i]](data_d, field))
+			except KeyError:
+				summary_d["warnings"].append("The requested visualization method '" + topic_d["visualization"][i] + "' is not supported.")
+				summary_d["visualizations"].append(None)
+
+		return summary_d
 
 ConnectionClass = DBConnection

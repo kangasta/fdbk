@@ -14,6 +14,7 @@ def generate_app(config=None):
 			"addData",
 			"addTopic",
 			"getData",
+			"getSummary",
 			"getTopics",
 			"getTopic"
 		],
@@ -55,7 +56,12 @@ def generate_app(config=None):
 			return jsonify(__ActionNotAllowedJSON), 403
 		if "AddTokens" in __config and __config["AddTokens"] and ("token" not in request.args or request.args["token"] not in __config["AddTokens"]):
 			return jsonify(__InvalidTokenJSON), 403
-		json_in = request.get_json()
+		try:
+			json_in = request.get_json()
+		except:
+			return jsonify({
+				"error": "No topic data provided in request"
+			}), 404
 
 		topic = json_in.pop("topic", None)
 		if not topic:
@@ -84,14 +90,25 @@ def generate_app(config=None):
 			return jsonify(__ActionNotAllowedJSON), 403
 		if "AddTokens" in __config and __config["AddTokens"] and ("token" not in request.args or request.args["token"] not in __config["AddTokens"]):
 			return jsonify(__InvalidTokenJSON), 403
-		if not __DBConnection.getTopic(topic)["allow_api_submissions"]:
-			return jsonify({
-				"error": "Data submissions through API not allowed for topic '" + topic + "'"
-			}), 403
-
-		input = request.get_json()
 		try:
-			__DBConnection.addData(topic, input)
+			if not __DBConnection.getTopic(topic)["allow_api_submissions"]:
+				return jsonify({
+					"error": "Data submissions through API not allowed for topic '" + topic + "'"
+				}), 403
+		except KeyError as e:
+			# Topic not defined
+			return jsonify({
+				"error": str(e)
+			}), 404
+
+		try:
+			json_in = request.get_json()
+		except:
+			return jsonify({
+				"error": "No topic data provided in request"
+			}), 404
+		try:
+			__DBConnection.addData(topic, json_in)
 		except KeyError as e:
 			# Topic not defined
 			return jsonify({
@@ -130,6 +147,19 @@ def generate_app(config=None):
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getData(topic)
+			return jsonify(data)
+		except KeyError as e:
+			return jsonify({
+				"error": str(e)
+			}), 404
+
+
+	@APP.route('/get/summary/<topic>', methods=["GET"])
+	def getSummary(topic):
+		if "getSummary" not in __config["AllowedActions"]:
+			return jsonify(__ActionNotAllowedJSON), 403
+		try:
+			data = __DBConnection.getSummary(topic)
 			return jsonify(data)
 		except KeyError as e:
 			return jsonify({

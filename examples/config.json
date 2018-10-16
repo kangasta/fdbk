@@ -5,7 +5,8 @@
 		"addData",
 		"getData",
 		"getTopics",
-		"getTopic"
+		"getTopic",
+		"getSummary"
 	],
 	"AddTokens": ["2f45", "976c"],
 	"ServeCWD": true
