@@ -14,7 +14,7 @@
 	null
   ],
   "visualization": [
-	"percent-stacked-bar",
+	"bittendonut",
 	null
   ],
   "allow_api_submissions": true
