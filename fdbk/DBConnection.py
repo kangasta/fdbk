@@ -2,13 +2,18 @@ class DBConnection(object):
 	'''Base class for DB connections.
 	'''
 	SUMMARY_FUNCS = {
-		"average": lambda data, field: sum(i/float(len(data)) for i in (a[field] for a in data)),
+		"average": lambda data, field: {
+			"type": "average",
+			"field": field,
+			"value": sum(i/float(len(data)) for i in (a[field] for a in data))
+		},
 		None: lambda data, field: None
 	}
 
 	VISUALIZATION_FUNCS = {
-		"bittendonut": lambda data, field: {
-			"type": "bittendonut",
+		"horseshoe": lambda data, field: {
+			"type": "horseshoe",
+			"field": field,
 			"data": [[a[field] for a in data].count(label) for label in set((a[field] for a in data))],
 			"labels": list(set((a[field] for a in data)))
 		},

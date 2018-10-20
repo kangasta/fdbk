@@ -10,12 +10,12 @@
     "text"
   ],
   "summary": [
-	"average",
-	null
+    "average",
+    null
   ],
   "visualization": [
-	"bittendonut",
-	null
+    "horseshoe",
+    null
   ],
   "allow_api_submissions": true
 }
