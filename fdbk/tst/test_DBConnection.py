@@ -24,15 +24,24 @@ class DBConnectionTest(TestCase):
 
 	def test_get_summary_produces_summary(self):
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"], summary=["average"], visualization=["bittendonut"])
+		C.addTopic("topic", description="description", fields=["number"], summary=["average"], visualization=["horseshoe"])
 		C.addData("topic", {"number": 3})
 		C.addData("topic", {"number": 4})
 		C.addData("topic", {"number": 2})
 		summary = C.getSummary("topic")
 		self.assertEqual(summary["topic"], "topic")
 		self.assertEqual(summary["description"], "description")
-		self.assertAlmostEqual(summary["summaries"][0], 3.0)
-		self.assertEqual(summary["visualizations"], [{"type": "bittendonut","labels": [2,3,4], "data":[1,1,1]}])
+
+		self.assertAlmostEqual(summary["summaries"][0]["value"], 3.0)
+		self.assertEqual(summary["summaries"][0]["field"], "number")
+		self.assertEqual(summary["summaries"][0]["type"], "average")
+
+		self.assertEqual(summary["visualizations"], [{
+			"type": "horseshoe",
+			"field": "number",
+			"labels": [2,3,4],
+			"data":[1,1,1]
+		}])
 
 	def test_get_summary_writes_warning_to_output_when_unsupported_method_requested(self):
 		C = DictConnection()
