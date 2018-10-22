@@ -29,12 +29,13 @@ def generate_app(config=None):
 		"error": "Action not allowed"
 	}
 
-	if not config:
+	__config = config
+	if not __config:
 		__config = __DefaultConfig
-	elif type(config) == str:
+	elif type(__config) == str:
 		with open(filename, "r") as f:
 			__config = json.load(f)
-	elif type(config) != dict:
+	elif type(__config) != dict:
 		raise  ValueError("Input configuration not recognized.")
 
 	# TODO: static files
