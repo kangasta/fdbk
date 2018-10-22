@@ -4,9 +4,25 @@
 
 Backend and DB wrapper for feedback collection system.
 
+## Installation
+
+Run:
+
+```bash
+pip install fdbk
+```
+
 ## Usage
 
-**TODO**
+### Running the server
+
+Launch development server to port 8080 with:
+
+```bash
+fdbk-server -p 8080
+```
+
+See `fdbk-server --help` for other options. The server is configured via a configuration file: see example in examples directory.
 
 ## Testing
 
