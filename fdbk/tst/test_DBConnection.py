@@ -43,6 +43,20 @@ class DBConnectionTest(TestCase):
 			"data":[1,1,1]
 		}])
 
+	def test_get_summary_average_ignores_invalid_values(self):
+		C = DictConnection()
+		C.addTopic("topic", description="description", fields=["number"], summary=["average"])
+		C.addData("topic", {"number": 3})
+		C.addData("topic", {"number": None})
+		C.addData("topic", {"number": "Not a number"})
+		summary = C.getSummary("topic")
+		self.assertEqual(summary["topic"], "topic")
+		self.assertEqual(summary["description"], "description")
+
+		self.assertAlmostEqual(summary["summaries"][0]["value"], 3.0)
+		self.assertEqual(summary["summaries"][0]["field"], "number")
+		self.assertEqual(summary["summaries"][0]["type"], "average")
+
 	def test_get_summary_writes_warning_to_output_when_unsupported_method_requested(self):
 		C = DictConnection()
 		C.addTopic("topic", description="description", fields=["number"], summary=["cow"], visualization=["moose"])

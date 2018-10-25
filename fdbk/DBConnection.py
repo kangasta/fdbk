@@ -1,3 +1,5 @@
+from numbers import Number
+
 class DBConnection(object):
 	'''Base class for DB connections.
 	'''
@@ -5,7 +7,7 @@ class DBConnection(object):
 		"average": lambda data, field: {
 			"type": "average",
 			"field": field,
-			"value": sum(i/float(len(data)) for i in (a[field] for a in data))
+			"value": sum(i/float(len([d for d in data if isinstance(d[field], Number)])) for i in (a[field] for a in data) if isinstance(i, Number))
 		},
 		None: lambda data, field: None
 	}
@@ -135,12 +137,16 @@ class DBConnection(object):
 			except KeyError:
 				summary_d["warnings"].append("The requested summary method '" + topic_d["summary"][i] + "' is not supported.")
 				summary_d["summaries"].append(None)
+			except IndexError:
+				pass
 
 			try:
 				summary_d["visualizations"].append(self.VISUALIZATION_FUNCS[topic_d["visualization"][i]](data_d, field))
 			except KeyError:
 				summary_d["warnings"].append("The requested visualization method '" + topic_d["visualization"][i] + "' is not supported.")
 				summary_d["visualizations"].append(None)
+			except IndexError:
+				pass
 
 		return summary_d
 
