@@ -68,7 +68,7 @@ class DBConnectionTest(TestCase):
 
 		self.assertEqual(summary["visualizations"][0]["field"], "number")
 		self.assertEqual(summary["visualizations"][0]["type"], "line")
-		self.assertRegex(summary["visualizations"][0]["t"][0], r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z")
+		self.assertRegex(summary["visualizations"][0]["labels"][0], r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z")
 
 	def test_latest_summary_returns_latest_item(self):
 		C = DictConnection()

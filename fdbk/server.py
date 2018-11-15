@@ -82,7 +82,7 @@ def generate_app(config=None):
 				"error": str(e)
 			}), 400
 		return jsonify({
-			"success": "Data successfully added to DB"
+			"success": "Topic successfully added to DB"
 		})
 
 	@APP.route('/add/data/<topic>', methods=["POST"])

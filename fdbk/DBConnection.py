@@ -28,8 +28,8 @@ class DBConnection(object):
 		"line": lambda data, field: {
 			"type": "line",
 			"field": field,
-			"t": [a["timestamp"] for a in data],
-			"y": [a[field] for a in data]
+			"labels": [a["timestamp"] for a in data],
+			"data": [a[field] for a in data]
 		},
 		None: lambda data, field: None
 	}
