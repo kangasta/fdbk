@@ -10,11 +10,11 @@
     "text"
   ],
   "summary": [
-    "average",
+    "latest",
     null
   ],
   "visualization": [
-    "horseshoe",
+    "line",
     null
   ],
   "allow_api_submissions": true

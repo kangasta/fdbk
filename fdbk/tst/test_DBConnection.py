@@ -1,3 +1,4 @@
+from datetime import datetime
 from unittest import TestCase
 
 try:
@@ -56,6 +57,30 @@ class DBConnectionTest(TestCase):
 		self.assertAlmostEqual(summary["summaries"][0]["value"], 3.0)
 		self.assertEqual(summary["summaries"][0]["field"], "number")
 		self.assertEqual(summary["summaries"][0]["type"], "average")
+
+	def test_line_visualization_gives_timestamps_in_utc(self):
+		C = DictConnection()
+		C.addTopic("topic", description="description", fields=["number"], visualization=["line"])
+		C.addData("topic", {"number": 1})
+		C.addData("topic", {"number": 2})
+		C.addData("topic", {"number": 3})
+		summary = C.getSummary("topic")
+
+		self.assertEqual(summary["visualizations"][0]["field"], "number")
+		self.assertEqual(summary["visualizations"][0]["type"], "line")
+		self.assertRegex(summary["visualizations"][0]["t"][0], r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z")
+
+	def test_latest_summary_returns_latest_item(self):
+		C = DictConnection()
+		C.addTopic("topic", description="description", fields=["letter"], summary=["latest"])
+		C.addData("topic", {"letter": "a"})
+		C.addData("topic", {"letter": "b"})
+		C.addData("topic", {"letter": "c"})
+		summary = C.getSummary("topic")
+
+		self.assertEqual(summary["summaries"][0]["field"], "letter")
+		self.assertEqual(summary["summaries"][0]["type"], "latest")
+		self.assertEqual(summary["summaries"][0]["value"], "c")
 
 	def test_get_summary_writes_warning_to_output_when_unsupported_method_requested(self):
 		C = DictConnection()

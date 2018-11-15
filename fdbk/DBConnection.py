@@ -1,3 +1,4 @@
+from datetime import datetime
 from numbers import Number
 
 class DBConnection(object):
@@ -9,6 +10,11 @@ class DBConnection(object):
 			"field": field,
 			"value": sum(i/float(len([d for d in data if isinstance(d[field], Number)])) for i in (a[field] for a in data) if isinstance(i, Number))
 		},
+		"latest": lambda data, field: {
+			"type": "latest",
+			"field": field,
+			"value": data[-1][field]
+		},
 		None: lambda data, field: None
 	}
 
@@ -18,6 +24,12 @@ class DBConnection(object):
 			"field": field,
 			"data": [[a[field] for a in data].count(label) for label in set((a[field] for a in data))],
 			"labels": list(set((a[field] for a in data)))
+		},
+		"line": lambda data, field: {
+			"type": "line",
+			"field": field,
+			"t": [a["timestamp"] for a in data],
+			"y": [a[field] for a in data]
 		},
 		None: lambda data, field: None
 	}
