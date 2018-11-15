@@ -78,7 +78,7 @@ class DictConnection(DBConnection):
 		for d in data:
 			ret.append({
 				"topic": d["topic"],
-				"timestamp": d["timestamp"].isoformat()
+				"timestamp": d["timestamp"].isoformat() + "Z"
 			})
 			for field in fields:
 				ret[-1][field] = d[field]
