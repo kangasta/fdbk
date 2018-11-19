@@ -143,22 +143,23 @@ class DBConnection(object):
 			"warnings": []
 		}
 
-		for i,field in enumerate(topic_d["fields"]):
-			try:
-				summary_d["summaries"].append(self.SUMMARY_FUNCS[topic_d["summary"][i]](data_d, field))
-			except KeyError:
-				summary_d["warnings"].append("The requested summary method '" + topic_d["summary"][i] + "' is not supported.")
-				summary_d["summaries"].append(None)
-			except IndexError:
-				pass
+		for summary_item in topic_d["summary"]:
+			if summary_item["method"] not in self.SUMMARY_FUNCS:
+				summary_d["warnings"].append("The requested summary method '" + summary_item["method"] + "' is not supported.")
+				continue
+			if summary_item["field"] not in topic_d["fields"]:
+				summary_d["warnings"].append("The requested field '" + summary_item["field"] + "' is undefined.")
+				continue
+			summary_d["summaries"].append(self.SUMMARY_FUNCS[summary_item["method"]](data_d, summary_item["field"]))
 
-			try:
-				summary_d["visualizations"].append(self.VISUALIZATION_FUNCS[topic_d["visualization"][i]](data_d, field))
-			except KeyError:
-				summary_d["warnings"].append("The requested visualization method '" + topic_d["visualization"][i] + "' is not supported.")
-				summary_d["visualizations"].append(None)
-			except IndexError:
-				pass
+		for visualization_item in topic_d["visualization"]:
+			if visualization_item["method"] not in self.VISUALIZATION_FUNCS:
+				summary_d["warnings"].append("The requested visualization method '" + visualization_item["method"] + "' is not supported.")
+				continue
+			if visualization_item["field"] not in topic_d["fields"]:
+				summary_d["warnings"].append("The requested field '" + visualization_item["field"] + "' is undefined.")
+				continue
+			summary_d["visualizations"].append(self.VISUALIZATION_FUNCS[visualization_item["method"]](data_d, visualization_item["field"]))
 
 		return summary_d
 
