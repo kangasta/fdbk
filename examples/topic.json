@@ -10,12 +10,24 @@
     "text"
   ],
   "summary": [
-    "latest",
-    null
+    {
+      "field": "stars",
+      "method": "average"
+    },
+    {
+      "field": "stars",
+      "method": "latest"
+    }
   ],
   "visualization": [
-    "line",
-    null
+    {
+      "field": "stars",
+      "method": "horseshoe"
+    },
+    {
+      "field": "stars",
+      "method": "line"
+    }
   ],
   "allow_api_submissions": true
 }
