@@ -118,6 +118,23 @@ class DBConnection(object):
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
 
+	def getLatest(self, topic):
+		'''Get latest data element of given topic
+
+		Note that this is an unoptimized implementation that wont be efficient for most databases. This method should be overridden by inheriting classes.
+
+		Args:
+			topic: Name of the topic to find
+
+		Returns:
+			Latest data dict under topic with matching name
+
+		Raises:
+			KeyError: Topic does not exist in DB
+
+		'''
+		return self.getData(topic)[-1]
+
 	def getSummary(self, topic):
 		'''Get summary of the topic data
 
