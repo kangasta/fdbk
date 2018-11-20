@@ -124,3 +124,13 @@ class DBConnectionTest(TestCase):
 			"The requested summary method 'cow' is not supported.",
 			"The requested visualization method 'moose' is not supported."
 		])
+
+	def test_get_latest_returns_latest_data_element_for_topic(self):
+		C = DictConnection()
+		C.addTopic("topic", description="description", fields=["number"])
+		C.addData("topic", {"number": 3})
+		C.addData("topic", {"number": 2})
+		C.addData("topic", {"number": 1})
+
+		latest = C.getLatest("topic")
+		self.assertEqual(latest["number"], 1)
