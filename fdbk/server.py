@@ -65,13 +65,14 @@ def generate_app(config=None):
 			}), 404
 
 		topic = json_in.pop("topic", None)
+		type_str = json_in.pop("type", None)
 		if not topic:
 			return jsonify({
 				"error": "No 'topic' field in input data"
 			}), 404
 
 		try:
-			__DBConnection.addTopic(topic, **json_in)
+			__DBConnection.addTopic(topic, type_str=type_str, **json_in)
 		except KeyError as e:
 			# Field not available in input data
 			return jsonify({
