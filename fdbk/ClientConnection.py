@@ -10,7 +10,8 @@ class ClientConnection(DBConnection):
 		self.__token = token
 
 	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
-		requests.post(self.__url + "/add/topic", data={
+		# TODO: Error handling
+		requests.post(self.__url + "/add/topic", json={
 			"topic": topic,
 			"type": type_str,
 			"description": description,
@@ -23,7 +24,8 @@ class ClientConnection(DBConnection):
 		return None
 
 	def addData(self, topic, values):
-		requests.post(self.__url + "/add/data/" + topic, data=values)
+		# TODO: Error handling
+		requests.post(self.__url + "/add/data/" + topic, json=values)
 		return None
 
 	def getTopics(self):

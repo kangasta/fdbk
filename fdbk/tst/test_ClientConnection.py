@@ -26,7 +26,7 @@ class ClientConnectionTest(TestCase):
 		return MockResponse(response.json, response.status_code)
 
 	def mock_requests_post(self, *args, **kwargs):
-		return self.__server.post(args[0], json=kwargs["data"])
+		return self.__server.post(*args, **kwargs)
 
 	def test_fresh_server_returns_empty_response_or_error(self):
 		c = ClientConnection("")
@@ -53,6 +53,3 @@ class ClientConnectionTest(TestCase):
 			c.addData("topic", {"number": 3})
 			getTopic.assert_called_with("topic")
 			addData.assert_called_with("topic", {"number": 3})
-
-
-
