@@ -9,24 +9,35 @@ except ImportError:
 from fdbk import ClientConnection
 from fdbk.server import generate_app
 
+class MockResponse(object):
+	def __init__(self, json_data, status_code):
+		self.json_data = json_data
+		self.status_code = status_code
+
+	def json(self):
+		return self.json_data
+
 class ClientConnectionTest(TestCase):
 	def setUp(self):
 		self.__server = generate_app().test_client()
 
 	def mock_requests_get(self, *args, **kwargs):
-		class MockResponse:
-			def __init__(self, json_data, status_code):
-				self.json_data = json_data
-				self.status_code = status_code
-
-			def json(self):
-				return self.json_data
-
 		response = self.__server.get(*args, **kwargs)
 		return MockResponse(response.json, response.status_code)
 
 	def mock_requests_post(self, *args, **kwargs):
 		return self.__server.post(*args, **kwargs)
+
+	def mock_requests_post_404(self, *args, **kwargs):
+		return MockResponse(404, {"error": "Mocked 404"})
+
+	def test_failing_add_calls_should_raise_RuntimeError(self):
+		c = ClientConnection("")
+		with patch('requests.post', side_effect=self.mock_requests_post_404):
+			with self.assertRaises(RuntimeError):
+				c.addTopic("topic")
+			with self.assertRaises(RuntimeError):
+				c.addData("topic", {"number": 3})
 
 	def test_fresh_server_returns_empty_response_or_error(self):
 		c = ClientConnection("")

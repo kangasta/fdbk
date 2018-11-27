@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import json
 import requests
 
 from fdbk import DBConnection
@@ -10,8 +11,7 @@ class ClientConnection(DBConnection):
 		self.__token = token
 
 	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
-		# TODO: Error handling
-		requests.post(self.__url + "/add/topic", json={
+		r = requests.post(self.__url + "/add/topic", json={
 			"topic": topic,
 			"type": type_str,
 			"description": description,
@@ -21,11 +21,14 @@ class ClientConnection(DBConnection):
 			"visualization": visualization,
 			"allow_api_submissions": allow_api_submissions
 		})
+		if r.status_code != requests.codes.ok:
+			raise RuntimeError(json.dumps(r.json()))
 		return None
 
 	def addData(self, topic, values):
-		# TODO: Error handling
-		requests.post(self.__url + "/add/data/" + topic, json=values)
+		r = requests.post(self.__url + "/add/data/" + topic, json=values)
+		if r.status_code != requests.codes.ok:
+			raise RuntimeError(json.dumps(r.json()))
 		return None
 
 	def getTopics(self):
