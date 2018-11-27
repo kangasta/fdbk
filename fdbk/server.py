@@ -6,7 +6,7 @@ import os
 import requests
 import uuid
 
-def generate_app(config=None):
+def generate_app(config=None, serve_cwd=True):
 	__DefaultConfig = {
 		"DBConnection": "DictConnection",
 		"DBParameters": [],
@@ -18,7 +18,7 @@ def generate_app(config=None):
 			"getTopics",
 			"getTopic"
 		],
-		"ServeCWD": True
+		"ServeCWD": serve_cwd
 	}
 
 	__InvalidTokenJSON = {
@@ -38,8 +38,8 @@ def generate_app(config=None):
 	elif type(__config) != dict:
 		raise  ValueError("Input configuration not recognized.")
 
-	# TODO: static files
-	APP = Flask(__name__, static_folder=os.path.join(os.getcwd(), "static"))
+	static_folder = os.path.join(os.getcwd(), "static") if __config["ServeCWD"] else None
+	APP = Flask(__name__, static_folder=static_folder)
 
 	__DBConnectionMod = import_module("fdbk." + __config["DBConnection"])
 	__DBConnection = __DBConnectionMod.ConnectionClass(*(__config["DBParameters"]))

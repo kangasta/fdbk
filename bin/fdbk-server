@@ -19,6 +19,9 @@ def __generate_parser():
 		help="port to serve from (default = 8080)",
 		default=8080,
 		type=int)
+	parser.add_argument("--no-front",
+		help="Disable serving CWD",
+		action="store_true")
 	return parser
 
 __args = __generate_parser().parse_args()
@@ -28,4 +31,4 @@ else:
 	with open(__args.config_file, "r") as f:
 		__config = json.load(f)
 
-generate_app(config=__config).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
+generate_app(config=__config, serve_cwd=(not __args.no_front)).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
