@@ -53,7 +53,7 @@ class DBConnection(object):
 			type_str: Type of the topic, for example 'form' or 'sensor'.
 			description: Description of the topic.
 			fields: List of data field names included in the topic.
-			units: List of units for corresponding field.
+			units: List of units for field.
 			summary: List of summary instructions for corresponding fields.
 			visualization: List of visualization instructions for corresponding fields.
 			allow_api_submissions: Boolean to determine if data for this topic should be added through the API

@@ -6,8 +6,10 @@
     "text"
   ],
   "units": [
-    "stars",
-    "text"
+    {
+      "field": "stars",
+      "unit": "stars"
+    }
   ],
   "summary": [
     {
