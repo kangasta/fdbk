@@ -14,6 +14,7 @@ def generate_app(config=None, serve_cwd=True):
 			"addData",
 			"addTopic",
 			"getData",
+			"getLatest",
 			"getSummary",
 			"getTopics",
 			"getTopic"
@@ -155,6 +156,17 @@ def generate_app(config=None, serve_cwd=True):
 				"error": str(e)
 			}), 404
 
+	@APP.route('/get/data/latest/<topic>', methods=["GET"])
+	def getLatest(topic):
+		if "getLatest" not in __config["AllowedActions"]:
+			return jsonify(__ActionNotAllowedJSON), 403
+		try:
+			data = __DBConnection.getLatest(topic)
+			return jsonify(data)
+		except KeyError as e:
+			return jsonify({
+				"error": str(e)
+			}), 404
 
 	@APP.route('/get/summary/<topic>', methods=["GET"])
 	def getSummary(topic):

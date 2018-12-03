@@ -4,6 +4,7 @@
 	"AllowedActions": [
 		"addData",
 		"getData",
+		"getLatest",
 		"getTopics",
 		"getTopic",
 		"getSummary"
