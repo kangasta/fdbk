@@ -93,16 +93,6 @@ def generate_app(config=None, serve_cwd=True):
 			return jsonify(__ActionNotAllowedJSON), 403
 		if "AddTokens" in __config and __config["AddTokens"] and ("token" not in request.args or request.args["token"] not in __config["AddTokens"]):
 			return jsonify(__InvalidTokenJSON), 403
-		try:
-			if not __DBConnection.getTopic(topic)["allow_api_submissions"]:
-				return jsonify({
-					"error": "Data submissions through API not allowed for topic '" + topic + "'"
-				}), 403
-		except KeyError as e:
-			# Topic not defined
-			return jsonify({
-				"error": str(e)
-			}), 404
 
 		try:
 			json_in = request.get_json()

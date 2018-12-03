@@ -10,7 +10,7 @@ class ClientConnection(DBConnection):
 		self.__url = url
 		self.__token = token
 
-	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
+	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], form_submissions=False):
 		r = requests.post(self.__url + "/add/topic", json={
 			"topic": topic,
 			"type": type_str,
@@ -19,7 +19,7 @@ class ClientConnection(DBConnection):
 			"units": units,
 			"summary": summary,
 			"visualization": visualization,
-			"allow_api_submissions": allow_api_submissions
+			"form_submissions": form_submissions
 		})
 		if r.status_code != requests.codes.ok:
 			raise RuntimeError(json.dumps(r.json()))

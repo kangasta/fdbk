@@ -31,5 +31,5 @@
       "method": "line"
     }
   ],
-  "allow_api_submissions": true
+  "form_submissions": true
 }

@@ -42,10 +42,10 @@ class DBConnection(object):
 		"units",
 		"summary",
 		"visualization",
-		"allow_api_submissions"
+		"form_submissions"
 	]
 
-	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], allow_api_submissions=True):
+	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], form_submissions=False):
 		'''Adds new topic to DB.
 
 		Args:
@@ -56,7 +56,7 @@ class DBConnection(object):
 			units: List of units for field.
 			summary: List of summary instructions for corresponding fields.
 			visualization: List of visualization instructions for corresponding fields.
-			allow_api_submissions: Boolean to determine if data for this topic should be added through the API
+			form_submissions: Boolean to determine if data for this topic should be added through the API
 
 		Returns:
 			None
