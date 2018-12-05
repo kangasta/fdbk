@@ -1,0 +1,33 @@
+{
+  "topic": "No topic",
+  "fields": [
+    "field"
+  ],
+  "units": [
+    {
+      "field": "field",
+      "unit": "unit"
+    }
+  ],
+  "summary": [
+    {
+      "field": "field",
+      "method": "latest"
+    },
+    {
+      "field": "field",
+      "method": "average"
+    }
+  ],
+  "visualization": [
+    {
+      "field": "field",
+      "method": "horseshoe"
+    },
+    {
+      "field": "field",
+      "method": "line"
+    }
+  ],
+  "form_submissions": true
+}
