@@ -13,7 +13,7 @@ class DBConnection(object):
 		"latest": lambda data, field: {
 			"type": "latest",
 			"field": field,
-			"value": data[-1][field]
+			"value": data[-1][field] if len(data) else None
 		},
 		None: lambda data, field: None
 	}
@@ -131,6 +131,7 @@ class DBConnection(object):
 
 		Raises:
 			KeyError: Topic does not exist in DB
+			IndexError: Topic has no data available
 
 		'''
 		return self.getData(topic)[-1]

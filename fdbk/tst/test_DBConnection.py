@@ -23,6 +23,19 @@ class DBConnectionTest(TestCase):
 		with self.assertRaises(NotImplementedError):
 			C.getData("topic")
 
+	def test_summary_and_visualization_funcs_handle_empty_lists(self):
+		summaries = ["average", "latest"]
+		visualizations = ["horseshoe", "line"]
+
+		for summary, visualization in zip(summaries, visualizations):
+			summary_d = {"field":"number", "method": summary}
+			visualization_d = {"field":"number", "method": visualization}
+
+			C = DictConnection()
+			C.addTopic("topic", fields=["number"], summary=[summary_d], visualization=[visualization_d])
+
+			C.getSummary("topic")
+
 	def test_get_summary_produces_summary(self):
 		summary_d = {"field":"number", "method":"average"}
 		visualization_d = {"field":"number", "method":"horseshoe"}
@@ -124,6 +137,12 @@ class DBConnectionTest(TestCase):
 			"The requested summary method 'cow' is not supported.",
 			"The requested visualization method 'moose' is not supported."
 		])
+
+	def test_get_latest_handles_empty_list(self):
+		C = DictConnection()
+		C.addTopic("topic")
+		with self.assertRaises(IndexError):
+			C.getLatest("topic")
 
 	def test_get_latest_returns_latest_data_element_for_topic(self):
 		C = DictConnection()

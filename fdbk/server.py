@@ -153,7 +153,7 @@ def generate_app(config=None, serve_cwd=True):
 		try:
 			data = __DBConnection.getLatest(topic)
 			return jsonify(data)
-		except KeyError as e:
+		except Exception as e:
 			return jsonify({
 				"error": str(e)
 			}), 404
