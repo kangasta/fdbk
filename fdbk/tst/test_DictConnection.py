@@ -7,50 +7,48 @@ except ImportError:
 
 from fdbk import DictConnection
 
-class DictConnectionTest(TestCase):
-	def test_cannot_add_topic_twice(self):
-		C = DictConnection()
-		C.addTopic("topic")
-		with self.assertRaises(KeyError):
-			C.addTopic("topic")
+from common_tests import tests
 
+class DictConnectionTest(TestCase):
+	def test_run_common_tests(self,):
+		for test in tests:
+			C = DictConnection()
+			test(self, C)
+
+'''
+Common tests:
 	def test_add_topic_affects_get_topic_s_output(self):
 		C = DictConnection()
-		C.addTopic("topic")
-		self.assertEqual(C.getTopic("topic")["topic"], "topic")
-		self.assertEqual(C.getTopics()[0]["topic"], "topic")
-		self.assertEqual(len(C.getTopics()), 1)
+		common_tests.add_topic_affects_get_topic_output(self, C)
 
 	def test_cannot_add_data_to_undefined_topic(self):
 		C = DictConnection()
 		with self.assertRaises(KeyError):
-			C.addData("topic", {"key": "value"})
+			C.addData("topic_id", {"key": "value"})
 
 	def test_cannot_add_data_with_non_matching_number_of_fields(self):
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"])
+		topic_id = C.addTopic("topic", description="description", fields=["number"])
 		with self.assertRaises(ValueError):
-			C.addData("topic", {"key1": "value1", "key2": "value2"})
+			C.addData(topic_id, {"key1": "value1", "key2": "value2"})
 
 	def test_cannot_add_data_with_non_matching_fields(self):
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"])
+		topic_id = C.addTopic("topic", description="description", fields=["number"])
 		with self.assertRaises(ValueError):
-			C.addData("topic", {"key": "value"})
+			C.addData(topic_id, {"key": "value"})
 
 	def test_add_data_affects_get_data_output(self):
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"])
-		C.addData("topic", {"number": 3})
-		self.assertEqual(C.getData("topic")[0]["number"], 3)
-		self.assertEqual(len(C.getData("topic")), 1)
+		common_tests.add_data_affects_get_data_output(self, C)
 
 	def test_cannot_get_undefined_topic(self):
 		C = DictConnection()
 		with self.assertRaises(KeyError):
-			C.getTopic("topic")
+			C.getTopic("topic_id")
 
 	def test_cannot_get_data_of_undefined_topic(self):
 		C = DictConnection()
 		with self.assertRaises(KeyError):
-			C.getData("topic")
+			C.getData("topic_id")
+'''

@@ -32,20 +32,20 @@ class DBConnectionTest(TestCase):
 			visualization_d = {"field":"number", "method": visualization}
 
 			C = DictConnection()
-			C.addTopic("topic", fields=["number"], summary=[summary_d], visualization=[visualization_d])
+			topic_id = C.addTopic("topic", fields=["number"], summary=[summary_d], visualization=[visualization_d])
 
-			C.getSummary("topic")
+			C.getSummary(topic_id)
 
 	def test_get_summary_produces_summary(self):
 		summary_d = {"field":"number", "method":"average"}
 		visualization_d = {"field":"number", "method":"horseshoe"}
 
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"], summary=[summary_d], visualization=[visualization_d])
-		C.addData("topic", {"number": 3})
-		C.addData("topic", {"number": 4})
-		C.addData("topic", {"number": 2})
-		summary = C.getSummary("topic")
+		topic_id = C.addTopic("topic", description="description", fields=["number"], summary=[summary_d], visualization=[visualization_d])
+		C.addData(topic_id, {"number": 3})
+		C.addData(topic_id, {"number": 4})
+		C.addData(topic_id, {"number": 2})
+		summary = C.getSummary(topic_id)
 		self.assertEqual(summary["topic"], "topic")
 		self.assertEqual(summary["description"], "description")
 
@@ -65,10 +65,10 @@ class DBConnectionTest(TestCase):
 		visualization_d = {"field":"number", "method":"horseshoe"}
 
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["letter"], summary=[summary_d], visualization=[visualization_d])
-		C.addData("topic", {"letter": "a"})
+		topic_id = C.addTopic("topic", description="description", fields=["letter"], summary=[summary_d], visualization=[visualization_d])
+		C.addData(topic_id, {"letter": "a"})
 
-		summary = C.getSummary("topic")
+		summary = C.getSummary(topic_id)
 		self.assertEqual(summary["topic"], "topic")
 		self.assertEqual(summary["description"], "description")
 
@@ -80,11 +80,11 @@ class DBConnectionTest(TestCase):
 		summary_d = {"field":"number", "method":"average"}
 
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"], summary=[summary_d])
-		C.addData("topic", {"number": 3})
-		C.addData("topic", {"number": None})
-		C.addData("topic", {"number": "Not a number"})
-		summary = C.getSummary("topic")
+		topic_id = C.addTopic("topic", description="description", fields=["number"], summary=[summary_d])
+		C.addData(topic_id, {"number": 3})
+		C.addData(topic_id, {"number": None})
+		C.addData(topic_id, {"number": "Not a number"})
+		summary = C.getSummary(topic_id)
 		self.assertEqual(summary["topic"], "topic")
 		self.assertEqual(summary["description"], "description")
 
@@ -96,11 +96,11 @@ class DBConnectionTest(TestCase):
 		visualization_d = {"field":"number", "method":"line"}
 
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"], visualization=[visualization_d])
-		C.addData("topic", {"number": 1})
-		C.addData("topic", {"number": 2})
-		C.addData("topic", {"number": 3})
-		summary = C.getSummary("topic")
+		topic_id = C.addTopic("topic", description="description", fields=["number"], visualization=[visualization_d])
+		C.addData(topic_id, {"number": 1})
+		C.addData(topic_id, {"number": 2})
+		C.addData(topic_id, {"number": 3})
+		summary = C.getSummary(topic_id)
 
 		self.assertEqual(summary["visualizations"][0]["field"], "number")
 		self.assertEqual(summary["visualizations"][0]["type"], "line")
@@ -115,11 +115,11 @@ class DBConnectionTest(TestCase):
 		summary_d = {"field":"letter", "method":"latest"}
 
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["letter"], summary=[summary_d])
-		C.addData("topic", {"letter": "a"})
-		C.addData("topic", {"letter": "b"})
-		C.addData("topic", {"letter": "c"})
-		summary = C.getSummary("topic")
+		topic_id = C.addTopic("topic", description="description", fields=["letter"], summary=[summary_d])
+		C.addData(topic_id, {"letter": "a"})
+		C.addData(topic_id, {"letter": "b"})
+		C.addData(topic_id, {"letter": "c"})
+		summary = C.getSummary(topic_id)
 
 		self.assertEqual(summary["summaries"][0]["field"], "letter")
 		self.assertEqual(summary["summaries"][0]["type"], "latest")
@@ -130,9 +130,9 @@ class DBConnectionTest(TestCase):
 		visualization_d = {"field":"number", "method":"moose"}
 
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"], summary=[summary_d], visualization=[visualization_d])
-		C.addData("topic", {"number": 3})
-		summary = C.getSummary("topic")
+		topic_id = C.addTopic("topic", description="description", fields=["number"], summary=[summary_d], visualization=[visualization_d])
+		C.addData(topic_id, {"number": 3})
+		summary = C.getSummary(topic_id)
 		self.assertEqual(summary["warnings"], [
 			"The requested summary method 'cow' is not supported.",
 			"The requested visualization method 'moose' is not supported."
@@ -140,16 +140,16 @@ class DBConnectionTest(TestCase):
 
 	def test_get_latest_handles_empty_list(self):
 		C = DictConnection()
-		C.addTopic("topic")
+		topic_id = C.addTopic("topic")
 		with self.assertRaises(IndexError):
-			C.getLatest("topic")
+			C.getLatest(topic_id)
 
 	def test_get_latest_returns_latest_data_element_for_topic(self):
 		C = DictConnection()
-		C.addTopic("topic", description="description", fields=["number"])
-		C.addData("topic", {"number": 3})
-		C.addData("topic", {"number": 2})
-		C.addData("topic", {"number": 1})
+		topic_id = C.addTopic("topic", description="description", fields=["number"])
+		C.addData(topic_id, {"number": 3})
+		C.addData(topic_id, {"number": 2})
+		C.addData(topic_id, {"number": 1})
 
-		latest = C.getLatest("topic")
+		latest = C.getLatest(topic_id)
 		self.assertEqual(latest["number"], 1)

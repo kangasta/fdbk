@@ -1,5 +1,6 @@
 from datetime import datetime
 from pymongo import MongoClient
+from uuid import uuid4
 
 from fdbk import DBConnection
 
@@ -17,37 +18,39 @@ class MongoConnection(DBConnection):
 			db.authenticate(self.__username, self.__password, source=self.__auth_source)
 		return db
 
-	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], form_submissions=False):
+	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
 		with MongoClient(self.__mongo_url) as client:
 			db = self.__get_db(client)
 
-			if db["topics"].find({"topic": topic}).count() > 0 or topic in db.list_collection_names():
-				raise KeyError("Topic '" + topic + "' already exists in database '" + self.__db + "'")
+			topic_id = str(uuid4())
 
-			db["topics"].insert({
-				"topic": topic,
+			db["topics"].insert_one({
+				"name": name,
+				"id": topic_id,
 				"type": type_str,
 				"description": description,
 				"fields": fields,
 				"units": units,
 				"summary": summary,
 				"visualization": visualization,
+				"metadata": metadata,
 				"form_submissions": form_submissions
 			})
 
-	def addData(self, topic, values):
+			return topic_id
+
+	def addData(self, topic_id, values):
 		with MongoClient(self.__mongo_url) as client:
 			db = self.__get_db(client)
-			topics = db["topics"].find({"topic": topic})
+			topics = db["topics"].find({"id": topic_id})
 			if topics.count() != 1:
-				raise KeyError("Topic '" + topic + "' not found from database '" + self.__db + "'")
+				raise KeyError("Topic ID '" + topic_id + "' not found from database '" + self.__db + "'")
 			fields = topics[0]["fields"]
 			if len(fields) != len(values):
 				raise ValueError("The number of given values does not match with the number of fields defined for topic")
 
-			# TODO: validate to match topic fields
 			data = {
-				"topic": topic,
+				"topic_id": topic_id,
 				"timestamp": datetime.utcnow()
 			}
 			for field in fields:
@@ -55,7 +58,7 @@ class MongoConnection(DBConnection):
 					raise ValueError("Value for field '" + field + "' not present in input data")
 				data[field] = values[field]
 
-			db[topic].insert(data)
+			db[topic_id].insert_one(data)
 
 	def getTopics(self):
 		with MongoClient(self.__mongo_url) as client:
@@ -71,13 +74,13 @@ class MongoConnection(DBConnection):
 				ret.append(topic_d)
 			return ret
 
-	def getTopic(self, topic):
+	def getTopic(self, topic_id):
 		with MongoClient(self.__mongo_url) as client:
 			db = self.__get_db(client)
 
-			topics = db["topics"].find({"topic": topic})
+			topics = db["topics"].find({"id": topic_id})
 			if topics.count() < 1:
-				raise KeyError("Topic '" + topic + "' not found from database '" + self.__db + "'")
+				raise KeyError("Topic ID '" + topic_id + "' not found from database '" + self.__db + "'")
 			topic = topics[0]
 
 			topic_d = {}
@@ -85,20 +88,20 @@ class MongoConnection(DBConnection):
 				topic_d[field] = topic[field]
 			return topic_d
 
-	def getData(self, topic):
+	def getData(self, topic_id):
 		with MongoClient(self.__mongo_url) as client:
 			db = self.__get_db(client)
 
-			topics = db["topics"].find({"topic": topic})
+			topics = db["topics"].find({"id": topic_id})
 			if topics.count() == 0:
-				raise KeyError("Topic '" + topic + "' not found from database '" + self.__db + "'")
+				raise KeyError("Topic ID '" + topic_id + "' not found from database '" + self.__db + "'")
 			fields = topics[0]["fields"]
-			data = db[topic].find()
+			data = db[topic_id].find()
 
 			ret = []
 			for d in data:
 				ret.append({
-					"topic": d["topic"],
+					"topic_id": d["topic_id"],
 					"timestamp": d["timestamp"].isoformat()
 				})
 				for field in fields:
@@ -106,25 +109,3 @@ class MongoConnection(DBConnection):
 			return ret
 
 ConnectionClass = MongoConnection
-
-if __name__ == "__main__":
-	MG = MongoConnection("172.20.0.3", "feedback")
-
-	print(MG.getTopics())
-	try:
-		print(MG.getData("IPA"))
-	except KeyError as e:
-		print(e)
-
-	MG.addTopic("IPA", "Taste review of this cool IPA!", ["stars","text"], ["stars", None])
-
-	try:
-		MG.addData("IPA", {"polarity": +1, "text": "Taste is awesome!"})
-	except ValueError as e:
-		print(e)
-	MG.addData("IPA", {"stars": 5, "text": "Taste is awesome!"})
-	MG.addData("IPA", {"stars": 3, "text": "Taste is average."})
-	MG.addData("IPA", {"stars": 2, "text": "Taste is meh."})
-
-	print(MG.getTopics())
-	print(MG.getData("IPA"))

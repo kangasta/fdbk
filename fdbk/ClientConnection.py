@@ -10,23 +10,24 @@ class ClientConnection(DBConnection):
 		self.__url = url
 		self.__token = token
 
-	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], form_submissions=False):
+	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
 		r = requests.post(self.__url + "/add/topic", json={
-			"topic": topic,
+			"name": name,
 			"type": type_str,
 			"description": description,
 			"fields": fields,
 			"units": units,
 			"summary": summary,
 			"visualization": visualization,
+			"metadata": metadata,
 			"form_submissions": form_submissions
 		})
 		if r.status_code != requests.codes.ok:
 			raise RuntimeError(json.dumps(r.json()))
-		return None
+		return r.json()["topic_id"]
 
-	def addData(self, topic, values):
-		r = requests.post(self.__url + "/add/data/" + topic, json=values)
+	def addData(self, topic_id, values):
+		r = requests.post(self.__url + "/add/data/" + topic_id, json=values)
 		if r.status_code != requests.codes.ok:
 			raise RuntimeError(json.dumps(r.json()))
 		return None
@@ -35,12 +36,12 @@ class ClientConnection(DBConnection):
 		# TODO: Error handling
 		return requests.get(self.__url + "/get/topics").json()
 
-	def getTopic(self, topic):
+	def getTopic(self, topic_id):
 		# TODO: Error handling
-		return requests.get(self.__url + "/get/topic/" + topic).json()
+		return requests.get(self.__url + "/get/topic/" + topic_id).json()
 
-	def getData(self, topic):
+	def getData(self, topic_id):
 		# TODO: Error handling
-		return requests.get(self.__url + "/get/data/" + topic).json()
+		return requests.get(self.__url + "/get/data/" + topic_id).json()
 
 ConnectionClass = ClientConnection

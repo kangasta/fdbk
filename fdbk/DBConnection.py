@@ -137,7 +137,7 @@ class DBConnection(object):
 			IndexError: Topic has no data available
 
 		'''
-		return self.getData(topic)[-1]
+		return self.getData(topic_id)[-1]
 
 	def getSummary(self, topic_id):
 		'''Get summary of the topic data
@@ -151,11 +151,11 @@ class DBConnection(object):
 		Raises:
 			KeyError: Topic does not exist in DB
 		'''
-		data_d = self.getData(topic)
-		topic_d = self.getTopic(topic)
+		data_d = self.getData(topic_id)
+		topic_d = self.getTopic(topic_id)
 
 		summary_d = {
-			"topic": topic_d["topic"],
+			"topic": topic_d["name"],
 			"description": topic_d["description"],
 			"units": topic_d["units"],
 			"num_entries": len(data_d),

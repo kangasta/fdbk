@@ -26,7 +26,8 @@ class ClientConnectionTest(TestCase):
 		return MockResponse(response.json, response.status_code)
 
 	def mock_requests_post(self, *args, **kwargs):
-		return self.__server.post(*args, **kwargs)
+		response = self.__server.post(*args, **kwargs)
+		return MockResponse(response.json, response.status_code)
 
 	def mock_requests_post_404(self, *args, **kwargs):
 		return MockResponse(404, {"error": "Mocked 404"})
@@ -46,15 +47,15 @@ class ClientConnectionTest(TestCase):
 
 		# TODO: check that correct errors are raised
 		with self.assertRaises(Exception):
-			c.getTopic("topic")
+			c.getTopic("topic_id")
 		with self.assertRaises(Exception):
-			c.getData("topic")
+			c.getData("topic_id")
 
 	def test_add_topic_triggers_correct_call(self):
 		c = ClientConnection("")
-		with patch('requests.post', side_effect=self.mock_requests_post), patch('fdbk.DictConnection.addTopic') as addTopic:
+		with patch('requests.post', side_effect=self.mock_requests_post), patch('fdbk.DictConnection.addTopic', return_value="topic_id") as addTopic:
 			c.addTopic("topic", "test")
-			addTopic.assert_called_with("topic", type_str="test", description="", fields=[], units=[], summary=[], visualization=[], form_submissions=False)
+			addTopic.assert_called_with("topic", type_str="test", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False)
 
 	def test_add_data_triggers_correct_call(self):
 		c = ClientConnection("")

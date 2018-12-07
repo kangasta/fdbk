@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 
 from fdbk import DBConnection
 
@@ -8,33 +9,36 @@ class DictConnection(DBConnection):
 			"topics": []
 		}
 
-	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], form_submissions=False):
-		if topic in (topic_d["topic"] for topic_d in self.__dict["topics"]):
-			raise KeyError("Topic '" + topic + "' already exists in database")
+	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
+		topic_id = str(uuid4())
 
 		self.__dict["topics"].append({
-			"topic": topic,
+			"name": name,
+			"id": topic_id,
 			"type": type_str,
 			"description": description,
 			"fields": fields,
 			"units": units,
 			"summary": summary,
 			"visualization": visualization,
+			"metadata": metadata,
 			"form_submissions": form_submissions
 		})
-		self.__dict[topic] = []
+		self.__dict[topic_id] = []
 
-	def addData(self, topic, values):
+		return topic_id
+
+	def addData(self, topic_id, values):
 		try:
-			topic_d = next(i for i in self.__dict["topics"] if i["topic"] == topic)
+			topic_d = next(i for i in self.__dict["topics"] if i["id"] == topic_id)
 		except StopIteration:
-			raise KeyError("Topic '" + topic + "' not found from database")
+			raise KeyError("Topic ID '" + topic_id + "' not found from database")
 		fields = topic_d["fields"]
 		if len(fields) != len(values):
 			raise ValueError("The number of given values does not match with the number of fields defined for topic")
 
 		data = {
-			"topic": topic,
+			"topic_id": topic_id,
 			"timestamp": datetime.utcnow()
 		}
 		for field in fields:
@@ -42,7 +46,7 @@ class DictConnection(DBConnection):
 				raise ValueError("Value for field '" + field + "' not present in input data")
 			data[field] = values[field]
 
-		self.__dict[topic].append(data)
+		self.__dict[topic_id].append(data)
 
 	def getTopics(self):
 		topics = self.__dict["topics"]
@@ -55,29 +59,29 @@ class DictConnection(DBConnection):
 			ret.append(topic_d)
 		return ret
 
-	def getTopic(self, topic):
+	def getTopic(self, topic_id):
 		try:
-			topic_d = next(i for i in self.__dict["topics"] if i["topic"] == topic)
+			topic_d = next(i for i in self.__dict["topics"] if i["id"] == topic_id)
 		except StopIteration:
-			raise KeyError("Topic '" + topic + "' not found from database")
+			raise KeyError("Topic ID '" + topic_id + "' not found from database")
 
 		topic = {}
 		for field in DBConnection.TOPIC_FIELDS:
 			topic[field] = topic_d[field]
 		return topic
 
-	def getData(self, topic):
+	def getData(self, topic_id):
 		try:
-			topic_d = next(i for i in self.__dict["topics"] if i["topic"] == topic)
+			topic_d = next(i for i in self.__dict["topics"] if i["id"] == topic_id)
 		except StopIteration:
-			raise KeyError("Topic '" + topic + "' not found from database")
+			raise KeyError("Topic ID '" + topic_id + "' not found from database")
 		fields = topic_d["fields"]
-		data = self.__dict[topic]
+		data = self.__dict[topic_id]
 
 		ret = []
 		for d in data:
 			ret.append({
-				"topic": d["topic"],
+				"topic_id": d["topic_id"],
 				"timestamp": d["timestamp"].isoformat() + "Z"
 			})
 			for field in fields:

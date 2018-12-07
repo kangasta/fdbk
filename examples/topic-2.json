@@ -1,15 +1,11 @@
 {
-  "name": "APA",
-  "description": "Taste review for the APA served in todays tasting.",
+  "topic":"IPAIPAIPAIPAIPAIPAIPAIPAIPAIPAIPA",
+  "description": "Taste review for the IPA served in todays tasting.",
   "fields": [
     "stars",
     "text"
   ],
   "units": [
-    {
-      "field": "text",
-      "unit": "text"
-    },
     {
       "field": "stars",
       "unit": "stars"
@@ -35,5 +31,5 @@
       "method": "line"
     }
   ],
-  "form_submissions": true
+  "form_submissions": false
 }
