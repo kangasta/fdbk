@@ -35,42 +35,45 @@ class DBConnection(object):
 	}
 
 	TOPIC_FIELDS = [
-		"topic",
+		"name",
+		"id",
 		"type",
 		"description",
 		"fields",
 		"units",
 		"summary",
 		"visualization",
+		"metadata",
 		"form_submissions"
 	]
 
-	def addTopic(self, topic, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], form_submissions=False):
+	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
 		'''Adds new topic to DB.
 
 		Args:
-			topic: Name of the topic.
+			name: Name of the topic.
 			type_str: Type of the topic, for example 'form' or 'sensor'.
 			description: Description of the topic.
 			fields: List of data field names included in the topic.
 			units: List of units for field.
 			summary: List of summary instructions for corresponding fields.
 			visualization: List of visualization instructions for corresponding fields.
+			metadata: Dict of metadata for topic
 			form_submissions: Boolean to determine if data for this topic should be added through the API
 
 		Returns:
-			None
+			Topic ID of the newly created topic
 
 		Raises:
 			KeyError: Topic already exists in DB
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
 
-	def addData(self, topic, values):
+	def addData(self, topic_id, values):
 		'''Adds data under given topic in DB
 
 		Args:
-			topic: Name of the topic under which to add data.
+			topic_id: ID of the topic under which to add data.
 			values:	Dictionary with field names as keys and field value as value.
 
 		Returns:
@@ -90,11 +93,11 @@ class DBConnection(object):
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
 
-	def getTopic(self, topic):
-		'''Get topic dict by name
+	def getTopic(self, topic_id):
+		'''Get topic dict by ID
 
 		Args:
-			topic: Name of the topic to find
+			topic_id: ID of the topic to find
 
 		Returns:
 			Topic dictionary with matching name
@@ -104,11 +107,11 @@ class DBConnection(object):
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
 
-	def getData(self, topic):
+	def getData(self, topic_id):
 		'''Get all data under given topic
 
 		Args:
-			topic: Name of the topic to find
+			topic_id: ID of the topic to find
 
 		Returns:
 			List of all data dicts under topic with matching name
@@ -118,13 +121,13 @@ class DBConnection(object):
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
 
-	def getLatest(self, topic):
+	def getLatest(self, topic_id):
 		'''Get latest data element of given topic
 
 		Note that this is an unoptimized implementation that wont be efficient for most databases. This method should be overridden by inheriting classes.
 
 		Args:
-			topic: Name of the topic to find
+			topic_id: ID of the topic to find
 
 		Returns:
 			Latest data dict under topic with matching name
@@ -136,11 +139,11 @@ class DBConnection(object):
 		'''
 		return self.getData(topic)[-1]
 
-	def getSummary(self, topic):
+	def getSummary(self, topic_id):
 		'''Get summary of the topic data
 
 		Args:
-			topic: Name of the topic to get the summary of
+			topic_id: ID of the topic to get the summary of
 
 		Returns:
 			Dictionary with summary of the topic
