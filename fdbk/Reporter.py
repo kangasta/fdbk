@@ -39,6 +39,12 @@ class Reporter(object):
 	def topic_id(self):
 		return self.__topic_id
 
+	def push(self, data):
+		self.__client.addData(self.__topic_id, data)
+
+		if self.__verbose:
+			print("Push:\n" + json.dumps(data, indent=2, sort_keys=True))
+
 	def start(self):
 		try:
 			while True:
@@ -54,12 +60,6 @@ class Reporter(object):
 						data[key] += float(sample[key])/self.__num_samples
 					sleep(float(self.__interval)/self.__num_samples)
 
-				#try:
-				self.__client.addData(self.__topic_id, data)
-				#except Exception as e:
-				#	print("Received error: " + str(e))
-
-				if self.__verbose:
-					print("Push:\n" + json.dumps(data, indent=2, sort_keys=True))
+				self.push(data)
 		except KeyboardInterrupt:
 			return

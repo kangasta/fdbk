@@ -72,3 +72,13 @@ class ReporterTest(TestCase):
 		data = C.getData(R.topic_id)
 		self.assertEqual(1, len(data))
 		self.assertAlmostEqual(5, data[0]["number"])
+
+	def test_provides_push_method(self):
+		DS = TestDataSource([], 0)
+		R = Reporter(DS, 'DictConnection', interval=0, num_samples=1)
+		for i in range(3):
+			R.push({'number': i})
+
+		C = R.connection
+		self.assertEqual(3, len(C.getData(R.topic_id)))
+		self.assertEqual(0, C.getData(R.topic_id)[0]['number'])
