@@ -5,10 +5,13 @@
 The `data-*.json` and `topic.json` are example data for `/add/data/<topic>` and `/add/topic` POST requests, respectively. Example usage:
 
 ```bash
-curl -d @topic.json -H "Content-Type: application/json" -X POST -L localhost:8080/add/topic?token=2f45;
+response=$(curl -sd @topic.json -H "Content-Type: application/json" -X POST -L localhost:8080/add/topic);
+
+# Get value of topic_id field from response JSON
+topic_id=$(echo "$response" | python3 -c "import json,sys; print(json.load(sys.stdin)['topic_id']);");
 
 for i in 1 2 3 4 5; do
-	curl -d @data-${i}.json -H "Content-Type: application/json" -X POST -L localhost:8080/add/data/APA?token=2f45;
+	curl -d @data-${i}.json -H "Content-Type: application/json" -X POST -L localhost:8080/add/data/$topic_id;
 done;
 ```
 

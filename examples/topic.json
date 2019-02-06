@@ -23,6 +23,18 @@
     {
       "field": "stars",
       "method": "latest"
+    },
+    {
+      "field": "stars",
+      "method": "last_truthy"
+    },
+    {
+      "field": "stars",
+      "method": "last_falsy"
+    },
+    {
+      "field": "stars",
+      "method": "not_supported"
     }
   ],
   "visualization": [
