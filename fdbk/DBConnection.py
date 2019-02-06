@@ -16,12 +16,12 @@ class DBConnection(object):
 			"value": data[-1][field] if len(data) else None
 		},
 		"last_truthy": lambda data, field: {
-			"type": "latest",
+			"type": "last_truthy",
 			"field": field,
 			"value": [d for d in data if d[field]][-1]["timestamp"] if len([d for d in data if d[field]]) else None
 		},
 		"last_falsy": lambda data, field: {
-			"type": "latest",
+			"type": "last_falsy",
 			"field": field,
 			"value": [d for d in data if not d[field]][-1]["timestamp"] if len([d for d in data if not d[field]]) else None
 		},
