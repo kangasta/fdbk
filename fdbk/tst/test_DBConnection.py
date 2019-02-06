@@ -153,3 +153,20 @@ class DBConnectionTest(TestCase):
 
 		latest = C.getLatest(topic_id)
 		self.assertEqual(latest["number"], 1)
+
+	def test_last_truthy_falsy_summary_returns_correct_timestamp(self):
+		summary_l = [
+			{"field":"onoff", "method":"last_truthy"},
+			{"field":"onoff", "method":"last_falsy"}
+		]
+
+		C = DictConnection()
+		topic_id = C.addTopic("topic", description="description", fields=["onoff"], summary=summary_l)
+		for i in [False, True, False, True]:
+			C.addData(topic_id, {"onoff": i})
+
+		summary = C.getSummary(topic_id)
+		data = C.getData(topic_id)
+
+		self.assertEqual(summary["summaries"][0]["value"], data[3]["timestamp"])
+		self.assertEqual(summary["summaries"][1]["value"], data[2]["timestamp"])
