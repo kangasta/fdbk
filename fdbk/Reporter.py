@@ -49,6 +49,8 @@ class Reporter(object):
 		try:
 			while True:
 				data = {}
+				active_samples = self.__num_samples
+
 				for field in self.__data_source.topic["fields"]:
 					data[field] = 0
 
@@ -56,9 +58,16 @@ class Reporter(object):
 					sample = self.__data_source.data
 					if sample is None:
 						return
+					if None in sample.values():
+						# TODO warning for ignored samples
+						active_samples -= 1
+						continue
 					for key in sample:
-						data[key] += float(sample[key])/self.__num_samples
+						data[key] += float(sample[key])
 					sleep(float(self.__interval)/self.__num_samples)
+
+				for key in data:
+					data[key] = float(data[key])/active_samples
 
 				self.push(data)
 		except KeyboardInterrupt:

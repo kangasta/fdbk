@@ -73,6 +73,17 @@ class ReporterTest(TestCase):
 		self.assertEqual(1, len(data))
 		self.assertAlmostEqual(5, data[0]["number"])
 
+	def test_averaging_ignores_samples_with_none(self):
+		# TODO check for warning
+		DS = TestDataSource([0, 2, None, 6, None, 10], 6)
+		R = Reporter(DS, 'DictConnection', interval=0, num_samples=6)
+		R.start()
+
+		C = R.connection
+		data = C.getData(R.topic_id)
+		self.assertEqual(1, len(data))
+		self.assertAlmostEqual(4.5, data[0]["number"])
+
 	def test_provides_push_method(self):
 		DS = TestDataSource([], 0)
 		R = Reporter(DS, 'DictConnection', interval=0, num_samples=1)
