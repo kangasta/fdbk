@@ -66,9 +66,10 @@ class Reporter(object):
 						data[key] += float(sample[key])
 					sleep(float(self.__interval)/self.__num_samples)
 
-				for key in data:
-					data[key] = float(data[key])/active_samples
+				if active_samples > 0:
+					for key in data:
+						data[key] = float(data[key])/active_samples
 
-				self.push(data)
+					self.push(data)
 		except KeyboardInterrupt:
 			return
