@@ -52,21 +52,21 @@ class ReporterTest(TestCase):
 
 	def test_reports_data_until_None(self):
 		DS = TestDataSource([1,2,3], 3)
-		R = Reporter(DS, 'DictConnection', interval=0, num_samples=1)
-		R.start()
+		R = Reporter(DS, 'DictConnection')
+		R.start(interval=0, num_samples=1)
 
 		C = R.connection
 		self.assertEqual(3, len(C.getData(R.topic_id)))
 
 	def test_start_method_catches_ctrl_c(self):
 		DS = TestDataSource([], 5)
-		R = Reporter(DS, 'DictConnection', interval=0, num_samples=1)
-		R.start()
+		R = Reporter(DS, 'DictConnection')
+		R.start(interval=0, num_samples=1)
 
 	def test_provides_averaging_over_push_interval(self):
 		DS = TestDataSource([0, 2, 4, 6, 8, 10], 6)
-		R = Reporter(DS, 'DictConnection', interval=0, num_samples=6)
-		R.start()
+		R = Reporter(DS, 'DictConnection')
+		R.start(interval=0, num_samples=6)
 
 		C = R.connection
 		data = C.getData(R.topic_id)
@@ -76,8 +76,8 @@ class ReporterTest(TestCase):
 	def test_averaging_ignores_samples_with_none(self):
 		# TODO check for warning
 		DS = TestDataSource([0, 2, None, 6, None, 10], 6)
-		R = Reporter(DS, 'DictConnection', interval=0, num_samples=6)
-		R.start()
+		R = Reporter(DS, 'DictConnection')
+		R.start(interval=0, num_samples=6)
 
 		C = R.connection
 		data = C.getData(R.topic_id)
@@ -86,8 +86,8 @@ class ReporterTest(TestCase):
 
 	def test_averaging_wont_push_if_no_valid_samples(self):
 		DS = TestDataSource([None, None, None], 3)
-		R = Reporter(DS, 'DictConnection', interval=0, num_samples=6)
-		R.start()
+		R = Reporter(DS, 'DictConnection')
+		R.start(interval=0, num_samples=6)
 
 		C = R.connection
 		data = C.getData(R.topic_id)
@@ -96,8 +96,8 @@ class ReporterTest(TestCase):
 	@patch.object(DictConnection, 'addData', side_effect=RuntimeError("Test error"))
 	def test_averaging_wont_pass_through_exception_on_failed_push(self, mock):
 		DS = TestDataSource([1,2,3], 3)
-		R = Reporter(DS, 'DictConnection', interval=0, num_samples=1)
-		R.start()
+		R = Reporter(DS, 'DictConnection')
+		R.start(interval=0, num_samples=1)
 
 		C = R.connection
 		data = C.getData(R.topic_id)
@@ -109,7 +109,7 @@ class ReporterTest(TestCase):
 
 	def test_provides_push_method(self):
 		DS = TestDataSource([], 0)
-		R = Reporter(DS, 'DictConnection', interval=0, num_samples=1)
+		R = Reporter(DS, 'DictConnection')
 		for i in range(3):
 			R.push({'number': i})
 

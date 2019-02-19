@@ -3,11 +3,9 @@ from importlib import import_module
 from time import sleep
 
 class Reporter(object):
-	def __init__(self, data_source, db_connection='', db_parameters=[], topic_id=None, interval=360, num_samples=60, verbose=False):
+	def __init__(self, data_source, db_connection='', db_parameters=[], topic_id=None, verbose=False):
 		self.__data_source = data_source
 		self.__topic_id = topic_id
-		self.__interval = interval
-		self.__num_samples = num_samples
 		self.__verbose = verbose
 
 		self.__create_client(db_connection, db_parameters)
@@ -45,16 +43,16 @@ class Reporter(object):
 		if self.__verbose:
 			print("Push:\n" + json.dumps(data, indent=2, sort_keys=True))
 
-	def start(self):
+	def start(self, interval=360, num_samples=60):
 		try:
 			while True:
 				data = {}
-				active_samples = self.__num_samples
+				active_samples = num_samples
 
 				for field in self.__data_source.topic["fields"]:
 					data[field] = 0
 
-				for _ in range(self.__num_samples):
+				for _ in range(num_samples):
 					sample = self.__data_source.data
 					if sample is None:
 						return
@@ -64,7 +62,7 @@ class Reporter(object):
 						continue
 					for key in sample:
 						data[key] += float(sample[key])
-					sleep(float(self.__interval)/self.__num_samples)
+					sleep(float(interval)/num_samples)
 
 				if active_samples > 0:
 					for key in data:
