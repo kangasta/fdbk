@@ -70,6 +70,12 @@ class Reporter(object):
 					for key in data:
 						data[key] = float(data[key])/active_samples
 
-					self.push(data)
+					try:
+						self.push(data)
+					except Exception as e:
+						if self.__verbose:
+							print("Push failed: " + str(e))
+				elif self.__verbose:
+					print("Push skipped: No valid samples to average.")
 		except KeyboardInterrupt:
 			return

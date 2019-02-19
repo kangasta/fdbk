@@ -5,7 +5,7 @@ try:
 except ImportError:
 	from mock import Mock, patch
 
-from fdbk import Reporter
+from fdbk import Reporter, DictConnection
 
 class TestDataSource(object):
 	def __init__(self, pattern, n):
@@ -92,6 +92,20 @@ class ReporterTest(TestCase):
 		C = R.connection
 		data = C.getData(R.topic_id)
 		self.assertEqual(0, len(data))
+
+	@patch.object(DictConnection, 'addData', side_effect=RuntimeError("Test error"))
+	def test_averaging_wont_pass_through_exception_on_failed_push(self, mock):
+		DS = TestDataSource([1,2,3], 3)
+		R = Reporter(DS, 'DictConnection', interval=0, num_samples=1)
+		R.start()
+
+		C = R.connection
+		data = C.getData(R.topic_id)
+		self.assertEqual(3, len(mock.mock_calls))
+		self.assertEqual(0, len(data))
+
+		with self.assertRaises(RuntimeError):
+			R.push({'number': 3})
 
 	def test_provides_push_method(self):
 		DS = TestDataSource([], 0)
