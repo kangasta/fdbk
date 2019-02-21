@@ -46,18 +46,8 @@ class MongoConnection(DBConnection):
 			if topics.count() != 1:
 				raise KeyError("Topic ID '" + topic_id + "' not found from database '" + self.__db + "'")
 			fields = topics[0]["fields"]
-			if len(fields) != len(values):
-				raise ValueError("The number of given values does not match with the number of fields defined for topic")
 
-			data = {
-				"topic_id": topic_id,
-				"timestamp": datetime.utcnow()
-			}
-			for field in fields:
-				if field not in values.keys():
-					raise ValueError("Value for field '" + field + "' not present in input data")
-				data[field] = values[field]
-
+			data = DBConnection.generateDataEntry(topic_id, fields, values)
 			db[topic_id].insert_one(data)
 
 	def getTopics(self):
@@ -65,14 +55,7 @@ class MongoConnection(DBConnection):
 			db = self.__get_db(client)
 
 			topics = db["topics"].find()
-
-			ret = []
-			for topic in topics:
-				topic_d = {}
-				for field in DBConnection.TOPIC_FIELDS:
-					topic_d[field] = topic[field]
-				ret.append(topic_d)
-			return ret
+			return DBConnection.generateTopicsList(topics)
 
 	def getTopic(self, topic_id):
 		with MongoClient(self.__mongo_url) as client:
@@ -83,10 +66,7 @@ class MongoConnection(DBConnection):
 				raise KeyError("Topic ID '" + topic_id + "' not found from database '" + self.__db + "'")
 			topic = topics[0]
 
-			topic_d = {}
-			for field in DBConnection.TOPIC_FIELDS:
-				topic_d[field] = topic[field]
-			return topic_d
+			return DBConnection.generateTopicResponse(topic)
 
 	def getData(self, topic_id):
 		with MongoClient(self.__mongo_url) as client:
@@ -98,14 +78,6 @@ class MongoConnection(DBConnection):
 			fields = topics[0]["fields"]
 			data = db[topic_id].find()
 
-			ret = []
-			for d in data:
-				ret.append({
-					"topic_id": d["topic_id"],
-					"timestamp": d["timestamp"].isoformat()
-				})
-				for field in fields:
-					ret[-1][field] = d[field]
-			return ret
+			return DBConnection.generateDataResponse(data, fields)
 
 ConnectionClass = MongoConnection
