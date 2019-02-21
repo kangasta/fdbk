@@ -84,7 +84,7 @@ class DBConnection(object):
 
 		Args:
 			topic_id: ID of the topic under which to add data.
-			values:	Dictionary with field names as keys and field value as value.
+			values: Dictionary with field names as keys and field value as value.
 
 		Returns:
 			None
@@ -95,6 +95,37 @@ class DBConnection(object):
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
 
+	@staticmethod
+	def generateDataEntry(topic_id, fields, values):
+		'''Generates data entry to add to the DB
+
+		Validates that the fields match to the ones specified by the provided topic ID. Adds topic ID and timestamp to the provides values entry.
+
+		Args:
+			topic_id: Topic ID to add to the entry
+			fields: Fields to validate against
+			values: Valued to add to the data entry
+
+		Returns:
+			Data entry dict with timestamp and topic ID
+
+		Raises:
+			ValueError: provided values do not match to the provided fields
+		'''
+		if len(fields) != len(values):
+			raise ValueError("The number of given values does not match with the number of fields defined for topic")
+
+		data = {
+			"topic_id": topic_id,
+			"timestamp": datetime.utcnow()
+		}
+		for field in fields:
+			if field not in values.keys():
+				raise ValueError("Value for field '" + field + "' not present in input data")
+			data[field] = values[field]
+
+		return data
+
 	def getTopics(self):
 		'''Gets list of topic dicts
 
@@ -102,6 +133,23 @@ class DBConnection(object):
 			List of topic dicts
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
+
+	@staticmethod
+	def generateTopicsList(topics):
+		''' Removes DB specific fields from the topics list
+
+		Args:
+			topics: List of DB entries
+
+		Returns:
+			Standardized topics list
+		'''
+		ret = []
+		for topic in topics:
+			ret.append(
+				DBConnection.generateTopicResponse(topic)
+			)
+		return ret
 
 	def getTopic(self, topic_id):
 		'''Get topic dict by ID
@@ -117,6 +165,21 @@ class DBConnection(object):
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
 
+	@staticmethod
+	def generateTopicResponse(topic):
+		''' Removes DB specific fields from the topic data
+
+		Args:
+			topics: DB entry
+
+		Returns:
+			Standardized topic dict
+		'''
+		topic_d = {}
+		for field in DBConnection.TOPIC_FIELDS:
+			topic_d[field] = topic[field]
+		return topic_d
+
 	def getData(self, topic_id):
 		'''Get all data under given topic
 
@@ -130,6 +193,29 @@ class DBConnection(object):
 			KeyError: Topic does not exist in DB
 		'''
 		raise NotImplementedError("Functionality not implemented by selected DB connection")
+
+	@staticmethod
+	def generateDataResponse(data, fields):
+		''' Generate standardized data list from DB entries
+
+		Standardizes the DB entries from the DB and converts the timestamps to ISO 8601 strings.
+
+		Args:
+			data: List of DB data entries
+			fields: Fields to parse from DB data entries
+
+		Returns:
+			Standardized data list
+		'''
+		ret = []
+		for d in data:
+			ret.append({
+				"topic_id": d["topic_id"],
+				"timestamp": d["timestamp"].isoformat() + "Z"
+			})
+			for field in fields:
+				ret[-1][field] = d[field]
+		return ret
 
 	def getLatest(self, topic_id):
 		'''Get latest data element of given topic
