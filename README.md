@@ -11,6 +11,13 @@ Run:
 ```bash
 pip install fdbk
 ```
+to install from [PyPI](https://pypi.org/project/fdbk/) or download this repository and run
+
+```bash
+python setup.py install
+```
+
+to install from sources.
 
 ## Usage
 
