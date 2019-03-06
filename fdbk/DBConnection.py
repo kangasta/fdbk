@@ -197,6 +197,28 @@ class DBConnection(object):
 		'''
 		return self.getData(topic_id)[-1]
 
+	def __runDataTools(self, functions, instructions, data, fields, topic_name):
+		results = []
+		warnings = []
+
+		for instruction in instructions:
+			if instruction["method"] not in functions:
+				warnings.append("The requested method '" + instruction["method"] + "' is not supported.")
+				continue
+			if instruction["field"] not in fields:
+				warnings.append("The requested field '" + instruction["field"] + "' is undefined.")
+				continue
+
+			result = functions[instruction["method"]](
+				data, instruction["field"]
+			)
+			if result is not None:
+				result["topic_name"] = topic_name
+
+			results.append(result)
+
+		return (results, warnings,)
+
 	def getSummary(self, topic_id):
 		'''Get summary of the topic data
 
@@ -222,27 +244,13 @@ class DBConnection(object):
 			"warnings": []
 		}
 
-		SUMMARY_FUNCS = SummaryFuncs()
+		results, warnings = self.__runDataTools(SummaryFuncs(), topic_d["summary"], data_d, topic_d["fields"], topic_d["name"])
+		summary_d["summaries"].extend(results)
+		summary_d["warnings"].extend(warnings)
 
-		for summary_item in topic_d["summary"]:
-			if summary_item["method"] not in SUMMARY_FUNCS:
-				summary_d["warnings"].append("The requested summary method '" + summary_item["method"] + "' is not supported.")
-				continue
-			if summary_item["field"] not in topic_d["fields"]:
-				summary_d["warnings"].append("The requested field '" + summary_item["field"] + "' is undefined.")
-				continue
-			summary_d["summaries"].append(SUMMARY_FUNCS[summary_item["method"]](data_d, summary_item["field"]))
-
-		VISUALIZATION_FUNCS = VisualizationFuncs()
-
-		for visualization_item in topic_d["visualization"]:
-			if visualization_item["method"] not in VISUALIZATION_FUNCS:
-				summary_d["warnings"].append("The requested visualization method '" + visualization_item["method"] + "' is not supported.")
-				continue
-			if visualization_item["field"] not in topic_d["fields"]:
-				summary_d["warnings"].append("The requested field '" + visualization_item["field"] + "' is undefined.")
-				continue
-			summary_d["visualizations"].append(VISUALIZATION_FUNCS[visualization_item["method"]](data_d, visualization_item["field"]))
+		results, warnings = self.__runDataTools(VisualizationFuncs(), topic_d["visualization"], data_d, topic_d["fields"], topic_d["name"])
+		summary_d["visualizations"].extend(results)
+		summary_d["warnings"].extend(warnings)
 
 		return summary_d
 
