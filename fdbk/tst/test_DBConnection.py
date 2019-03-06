@@ -56,6 +56,7 @@ class DBConnectionTest(TestCase):
 		self.assertEqual(summary["visualizations"], [{
 			"type": "horseshoe",
 			"field": "number",
+			"topic_name": "topic",
 			"labels": [2,3,4],
 			"data":[1,1,1]
 		}])
@@ -134,8 +135,8 @@ class DBConnectionTest(TestCase):
 		C.addData(topic_id, {"number": 3})
 		summary = C.getSummary(topic_id)
 		self.assertEqual(summary["warnings"], [
-			"The requested summary method 'cow' is not supported.",
-			"The requested visualization method 'moose' is not supported."
+			"The requested method 'cow' is not supported.",
+			"The requested method 'moose' is not supported."
 		])
 
 	def test_get_latest_handles_empty_list(self):
