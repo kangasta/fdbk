@@ -1,48 +1,10 @@
 from datetime import datetime
-from numbers import Number
+
+from fdbk.DataTools import SummaryFuncs, VisualizationFuncs
 
 class DBConnection(object):
 	'''Base class for DB connections.
 	'''
-	SUMMARY_FUNCS = {
-		"average": lambda data, field: {
-			"type": "average",
-			"field": field,
-			"value": sum(i/float(len([d for d in data if isinstance(d[field], Number)])) for i in (a[field] for a in data) if isinstance(i, Number))
-		},
-		"latest": lambda data, field: {
-			"type": "latest",
-			"field": field,
-			"value": data[-1][field] if len(data) else None
-		},
-		"last_truthy": lambda data, field: {
-			"type": "last_truthy",
-			"field": field,
-			"value": [d for d in data if d[field]][-1]["timestamp"] if len([d for d in data if d[field]]) else None
-		},
-		"last_falsy": lambda data, field: {
-			"type": "last_falsy",
-			"field": field,
-			"value": [d for d in data if not d[field]][-1]["timestamp"] if len([d for d in data if not d[field]]) else None
-		},
-		None: lambda data, field: None
-	}
-
-	VISUALIZATION_FUNCS = {
-		"horseshoe": lambda data, field: {
-			"type": "horseshoe",
-			"field": field,
-			"data": [[a[field] for a in data].count(label) for label in set((a[field] for a in data))],
-			"labels": list(set((a[field] for a in data)))
-		},
-		"line": lambda data, field: {
-			"type": "line",
-			"field": field,
-			"labels": [a["timestamp"] for a in data],
-			"data": [a[field] for a in data]
-		},
-		None: lambda data, field: None
-	}
 
 	TOPIC_FIELDS = [
 		"name",
@@ -260,23 +222,27 @@ class DBConnection(object):
 			"warnings": []
 		}
 
+		SUMMARY_FUNCS = SummaryFuncs()
+
 		for summary_item in topic_d["summary"]:
-			if summary_item["method"] not in self.SUMMARY_FUNCS:
+			if summary_item["method"] not in SUMMARY_FUNCS:
 				summary_d["warnings"].append("The requested summary method '" + summary_item["method"] + "' is not supported.")
 				continue
 			if summary_item["field"] not in topic_d["fields"]:
 				summary_d["warnings"].append("The requested field '" + summary_item["field"] + "' is undefined.")
 				continue
-			summary_d["summaries"].append(self.SUMMARY_FUNCS[summary_item["method"]](data_d, summary_item["field"]))
+			summary_d["summaries"].append(SUMMARY_FUNCS[summary_item["method"]](data_d, summary_item["field"]))
+
+		VISUALIZATION_FUNCS = VisualizationFuncs()
 
 		for visualization_item in topic_d["visualization"]:
-			if visualization_item["method"] not in self.VISUALIZATION_FUNCS:
+			if visualization_item["method"] not in VISUALIZATION_FUNCS:
 				summary_d["warnings"].append("The requested visualization method '" + visualization_item["method"] + "' is not supported.")
 				continue
 			if visualization_item["field"] not in topic_d["fields"]:
 				summary_d["warnings"].append("The requested field '" + visualization_item["field"] + "' is undefined.")
 				continue
-			summary_d["visualizations"].append(self.VISUALIZATION_FUNCS[visualization_item["method"]](data_d, visualization_item["field"]))
+			summary_d["visualizations"].append(VISUALIZATION_FUNCS[visualization_item["method"]](data_d, visualization_item["field"]))
 
 		return summary_d
 
