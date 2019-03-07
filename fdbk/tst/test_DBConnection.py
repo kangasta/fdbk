@@ -212,3 +212,26 @@ class DBConnectionTest(TestCase):
 		self.assertEqual(overview["fields"], ["number"])
 
 		self.assertEqual(len(overview["summaries"]), 3)
+
+	def test_overview_and_comparison_include_units(self):
+		summary_d = {"field":"number", "method":"latest"}
+		visualization_d = {"field":"number", "method":"horseshoe"}
+		units_d = {"field":"number", "unit":"scalar"}
+
+		C = DictConnection()
+		for i in range(3):
+			topic_id = C.addTopic(
+				"topic_" + str(i),
+				description="description",
+				fields=["number"],
+				summary=[summary_d],
+				visualization=[visualization_d],
+				units=[units_d]
+			)
+			C.addData(topic_id, {"number": i})
+		overview = C.getOverview()
+		self.assertEqual(overview["topic_names"], ["topic_0", "topic_1", "topic_2"])
+		self.assertEqual(overview["fields"], ["number"])
+
+		self.assertEqual(len(overview["summaries"]), 3)
+		self.assertEqual(overview["summaries"][0]["unit"], "scalar")
