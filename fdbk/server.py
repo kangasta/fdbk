@@ -13,6 +13,7 @@ def generate_app(config=None, serve_cwd=True):
 		"AllowedActions": [
 			"addData",
 			"addTopic",
+			"getComparison",
 			"getData",
 			"getLatest",
 			"getSummary",
@@ -165,6 +166,18 @@ def generate_app(config=None, serve_cwd=True):
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getSummary(topic_id)
+			return jsonify(data)
+		except KeyError as e:
+			return jsonify({
+				"error": str(e)
+			}), 404
+
+	@APP.route('/get/comparison/<topic_ids>', methods=["GET"])
+	def getComparison(topic_ids):
+		if "getSummary" not in __config["AllowedActions"]:
+			return jsonify(__ActionNotAllowedJSON), 403
+		try:
+			data = __DBConnection.getComparison(topic_ids.split(','))
 			return jsonify(data)
 		except KeyError as e:
 			return jsonify({
