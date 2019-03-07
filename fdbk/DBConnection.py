@@ -254,4 +254,40 @@ class DBConnection(object):
 
 		return summary_d
 
+	def getComparison(self, topic_ids):
+		'''Get compatision of the data of the given topic IDs
+
+		Args:
+			topic_ids: List of topic IDs to compare
+
+		Returns:
+			Dictionary with comparision of the topics
+
+		Raises:
+			KeyError: Topic does not exist in DB
+		'''
+		comparison_d = {
+			"topic_names": [],
+			"topic_ids": topic_ids,
+			"fields": [],
+			"visualizations": [],
+			"warnings": []
+		}
+
+		for topic_id in topic_ids:
+			data_d = self.getData(topic_id)
+			topic_d = self.getTopic(topic_id)
+
+			comparison_d["topic_names"].append(topic_d["name"])
+			comparison_d["fields"].extend(topic_d["fields"])
+
+			results, warnings = self.__runDataTools(VisualizationFuncs(), topic_d["visualization"], data_d, topic_d["fields"], topic_d["name"])
+			comparison_d["visualizations"].extend(results)
+			comparison_d["warnings"].extend(warnings)
+
+		comparison_d["fields"] = list(set(comparison_d["fields"]))
+		return comparison_d
+
+
+
 ConnectionClass = DBConnection

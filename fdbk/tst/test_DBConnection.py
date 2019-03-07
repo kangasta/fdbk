@@ -171,3 +171,25 @@ class DBConnectionTest(TestCase):
 
 		self.assertEqual(summary["summaries"][0]["value"], data[3]["timestamp"])
 		self.assertEqual(summary["summaries"][1]["value"], data[2]["timestamp"])
+
+	def test_get_comparison_produces_comparison(self):
+		visualization_d = {"field":"number", "method":"horseshoe"}
+
+		topic_ids = []
+		C = DictConnection()
+		for i in range(3):
+			topic_ids.append(
+				C.addTopic(
+					"topic_" + str(i),
+					description="description",
+					fields=["number"],
+					visualization=[visualization_d]
+			))
+			C.addData(topic_ids[-1], {"number": 3})
+			C.addData(topic_ids[-1], {"number": 4})
+			C.addData(topic_ids[-1], {"number": 2})
+		comparison = C.getComparison(topic_ids)
+		self.assertEqual(comparison["topic_names"], ["topic_0", "topic_1", "topic_2"])
+		self.assertEqual(comparison["fields"], ["number"])
+
+		self.assertEqual(len(comparison["visualizations"]), 3)
