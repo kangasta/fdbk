@@ -25,10 +25,12 @@ def __generate_parser():
 	return parser
 
 __args = __generate_parser().parse_args()
+__serve_cwd = not __args.no_front
 if not __args.config_file:
 	__config = None
 else:
 	with open(__args.config_file, "r") as f:
 		__config = json.load(f)
+	__config["ServeCWD"] = __serve_cwd
 
-generate_app(config=__config, serve_cwd=(not __args.no_front)).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
+generate_app(config=__config, serve_cwd=__serve_cwd).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
