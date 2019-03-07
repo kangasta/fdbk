@@ -197,23 +197,34 @@ class DBConnection(object):
 		'''
 		return self.getData(topic_id)[-1]
 
-	def __runDataTools(self, functions, instructions, data, fields, topic_name):
+	def __runDataTools(self, key, topic_d, data):
+		if key == "summary":
+			funcs = SummaryFuncs()
+		elif key == "visualization":
+			funcs = VisualizationFuncs()
+		else:
+			raise ValueError("Data tools target '" + str(key) + "' not supported.")
+
 		results = []
 		warnings = []
 
-		for instruction in instructions:
-			if instruction["method"] not in functions:
+		for instruction in topic_d[key]:
+			if instruction["method"] not in funcs:
 				warnings.append("The requested method '" + instruction["method"] + "' is not supported.")
 				continue
-			if instruction["field"] not in fields:
+			if instruction["field"] not in topic_d["fields"]:
 				warnings.append("The requested field '" + instruction["field"] + "' is undefined.")
 				continue
 
-			result = functions[instruction["method"]](
+			result = funcs[instruction["method"]](
 				data, instruction["field"]
 			)
 			if result is not None:
-				result["topic_name"] = topic_name
+				result["topic_name"] = topic_d["name"]
+				try:
+					result["unit"] = next(i["unit"] for i in topic_d["units"] if i[field] == instruction["field"])
+				except StopIteration:
+					result["unit"] = None
 
 			results.append(result)
 
@@ -244,33 +255,32 @@ class DBConnection(object):
 			"warnings": []
 		}
 
-		results, warnings = self.__runDataTools(SummaryFuncs(), topic_d["summary"], data_d, topic_d["fields"], topic_d["name"])
+		results, warnings = self.__runDataTools("summary", topic_d, data_d)
 		summary_d["summaries"].extend(results)
 		summary_d["warnings"].extend(warnings)
 
-		results, warnings = self.__runDataTools(VisualizationFuncs(), topic_d["visualization"], data_d, topic_d["fields"], topic_d["name"])
+		results, warnings = self.__runDataTools("visualization", topic_d, data_d)
 		summary_d["visualizations"].extend(results)
 		summary_d["warnings"].extend(warnings)
 
 		return summary_d
 
-	def getComparison(self, topic_ids):
-		'''Get compatision of the data of the given topic IDs
+	def __runDataToolsForMany(self, key=None, topic_ids=None):
+		if key == "summary":
+			result_key = "summaries"
+		elif key == "visualization":
+			result_key = "visualizations"
+		else:
+			raise ValueError("Data tools target '" + str(key) + "' not supported.")
 
-		Args:
-			topic_ids: List of topic IDs to compare
+		if topic_ids is None:
+			topic_ids = [topic["id"] for topic in self.getTopics()]
 
-		Returns:
-			Dictionary with comparision of the topics
-
-		Raises:
-			KeyError: Topic does not exist in DB
-		'''
-		comparison_d = {
+		result_d = {
 			"topic_names": [],
 			"topic_ids": topic_ids,
 			"fields": [],
-			"visualizations": [],
+			result_key: [],
 			"warnings": []
 		}
 
@@ -278,16 +288,43 @@ class DBConnection(object):
 			data_d = self.getData(topic_id)
 			topic_d = self.getTopic(topic_id)
 
-			comparison_d["topic_names"].append(topic_d["name"])
-			comparison_d["fields"].extend(topic_d["fields"])
+			result_d["topic_names"].append(topic_d["name"])
+			result_d["fields"].extend(topic_d["fields"])
 
-			results, warnings = self.__runDataTools(VisualizationFuncs(), topic_d["visualization"], data_d, topic_d["fields"], topic_d["name"])
-			comparison_d["visualizations"].extend(results)
-			comparison_d["warnings"].extend(warnings)
+			results, warnings = self.__runDataTools(key, topic_d, data_d)
+			result_d[result_key].extend(results)
+			result_d["warnings"].extend(warnings)
 
-		comparison_d["fields"] = list(set(comparison_d["fields"]))
-		return comparison_d
+		result_d["fields"] = list(set(result_d["fields"]))
+		return result_d
 
+	def getComparison(self, topic_ids):
+		'''Get comparison of the data of the given topic IDs
+
+		Args:
+			topic_ids: List of topic IDs to compare
+
+		Returns:
+			Dictionary with comparison of the topics data
+
+		Raises:
+			KeyError: Topic does not exist in DB
+		'''
+		return self.__runDataToolsForMany(key="visualization", topic_ids=topic_ids)
+
+	def getOverview(self, topic_ids=None):
+		'''Get overview of the data
+
+		Args:
+			topic_ids: List of topic IDs to overview. If not given, overview of all topics is generated.
+
+		Returns:
+			Dictionary with overview of the topics data
+
+		Raises:
+			KeyError: Topic does not exist in DB
+		'''
+		return self.__runDataToolsForMany(key="summary", topic_ids=topic_ids)
 
 
 ConnectionClass = DBConnection

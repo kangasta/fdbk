@@ -16,6 +16,7 @@ def generate_app(config=None, serve_cwd=True):
 			"getComparison",
 			"getData",
 			"getLatest",
+			"getOverview",
 			"getSummary",
 			"getTopics",
 			"getTopic"
@@ -38,7 +39,7 @@ def generate_app(config=None, serve_cwd=True):
 		with open(filename, "r") as f:
 			__config = json.load(f)
 	elif type(__config) != dict:
-		raise  ValueError("Input configuration not recognized.")
+		raise ValueError("Input configuration not recognized.")
 
 	static_folder = os.path.join(os.getcwd(), "static") if __config["ServeCWD"] else None
 	APP = Flask(__name__, static_folder=static_folder)
@@ -178,6 +179,18 @@ def generate_app(config=None, serve_cwd=True):
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getComparison(topic_ids.split(','))
+			return jsonify(data)
+		except KeyError as e:
+			return jsonify({
+				"error": str(e)
+			}), 404
+
+	@APP.route('/get/overview', methods=["GET"])
+	def getOverview():
+		if "getOverview" not in __config["AllowedActions"]:
+			return jsonify(__ActionNotAllowedJSON), 403
+		try:
+			data = __DBConnection.getOverview()
 			return jsonify(data)
 		except KeyError as e:
 			return jsonify({
