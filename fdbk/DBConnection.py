@@ -222,7 +222,7 @@ class DBConnection(object):
 			if result is not None:
 				result["topic_name"] = topic_d["name"]
 				try:
-					result["unit"] = next(i["unit"] for i in topic_d["units"] if i[field] == instruction["field"])
+					result["unit"] = next(i["unit"] for i in topic_d["units"] if i["field"] == instruction["field"])
 				except StopIteration:
 					result["unit"] = None
 
