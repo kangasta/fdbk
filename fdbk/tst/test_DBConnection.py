@@ -58,7 +58,8 @@ class DBConnectionTest(TestCase):
 			"field": "number",
 			"topic_name": "topic",
 			"labels": [2,3,4],
-			"data":[1,1,1]
+			"data":[1,1,1],
+			"unit": None
 		}])
 
 	def test_get_summary_ignores_invalid_fields(self):
@@ -193,3 +194,21 @@ class DBConnectionTest(TestCase):
 		self.assertEqual(comparison["fields"], ["number"])
 
 		self.assertEqual(len(comparison["visualizations"]), 3)
+
+	def test_get_overview_produces_overview(self):
+		summary_d = {"field":"number", "method":"latest"}
+
+		C = DictConnection()
+		for i in range(3):
+			topic_id = C.addTopic(
+				"topic_" + str(i),
+				description="description",
+				fields=["number"],
+				summary=[summary_d]
+			)
+			C.addData(topic_id, {"number": i})
+		overview = C.getOverview()
+		self.assertEqual(overview["topic_names"], ["topic_0", "topic_1", "topic_2"])
+		self.assertEqual(overview["fields"], ["number"])
+
+		self.assertEqual(len(overview["summaries"]), 3)
