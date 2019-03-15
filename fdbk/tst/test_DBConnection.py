@@ -106,12 +106,14 @@ class DBConnectionTest(TestCase):
 
 		self.assertEqual(summary["visualizations"][0]["field"], "number")
 		self.assertEqual(summary["visualizations"][0]["type"], "line")
+
 		iso8601z_re = r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z"
+		field_to_test = summary["visualizations"][0]["data"][0]["x"]
 
 		try: # Python 3
-			self.assertRegex(summary["visualizations"][0]["labels"][0], iso8601z_re)
+			self.assertRegex(field_to_test, iso8601z_re)
 		except AttributeError: # Python 2
-			self.assertRegexpMatches(summary["visualizations"][0]["labels"][0], iso8601z_re)
+			self.assertRegexpMatches(field_to_test, iso8601z_re)
 
 	def test_latest_summary_returns_latest_item(self):
 		summary_d = {"field":"letter", "method":"latest"}

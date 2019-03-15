@@ -31,6 +31,5 @@ class VisualizationFuncs(object):
 		return {
 			"type": "line",
 			"field": field,
-			"labels": [a["timestamp"] for a in data],
-			"data": [a[field] for a in data]
+			"data": [{"x": a["timestamp"], "y": a[field]} for a in data],
 		}
