@@ -1,5 +1,15 @@
 # Examples
 
+## Example for Reporter usage
+
+The `net_status.py` provides an example on how to use `fdbk.Reporter` to automatically push data from data source to fdbk. For example, run
+
+```bash
+python3 net_status.py -i 10 -n 5 -t Google https://google.com http://localhost:8080
+```
+
+to poll elapsed time of get request to Google with 5 sample averaging over 10 seconds.
+
 ## Example data for POST requests
 
 The `data-*.json` and `topic.json` are example data for `/add/data/<topic>` and `/add/topic` POST requests, respectively. Example usage:
