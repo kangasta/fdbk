@@ -14,14 +14,13 @@ class SummaryFuncs(object):
 	def __getitem__(self, key):
 		if key == "average":
 			return SummaryFuncs.average
-		elif key == "latest":
+		if key == "latest":
 			return SummaryFuncs.latest
-		elif key == "last_truthy":
+		if key == "last_truthy":
 			return lambda data, field: SummaryFuncs.last(True, data, field)
-		elif key == "last_falsy":
+		if key == "last_falsy":
 			return lambda data, field: SummaryFuncs.last(False, data, field)
-		else:
-			return lambda data, field: None
+		return lambda data, field: None
 
 	@staticmethod
 	def average(data, field):
@@ -34,15 +33,15 @@ class SummaryFuncs(object):
 			"field": field,
 			"value": sum(i/float(len(filtered_data)) for i in filtered_data)
 		}
-	
+
 	@staticmethod
 	def latest(data, field):
 		return {
 			"type": "latest",
 			"field": field,
-			"value": data[-1][field] if len(data) else None
+			"value": data[-1][field] if data else None
 		}
-	
+
 	@staticmethod
 	def last(truthy_or_falsy, data, field):
 		truthy_or_falsy = bool(truthy_or_falsy)

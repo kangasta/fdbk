@@ -1,10 +1,8 @@
-from flask import Flask, jsonify, request, send_from_directory
 from importlib import import_module
+import json, os, uuid
 
-import json
-import os
+from flask import Flask, jsonify, request, send_from_directory
 import requests
-import uuid
 
 def generate_app(config=None, serve_cwd=True):
 	__DefaultConfig = {
@@ -35,10 +33,10 @@ def generate_app(config=None, serve_cwd=True):
 	__config = config
 	if not __config:
 		__config = __DefaultConfig
-	elif type(__config) == str:
-		with open(filename, "r") as f:
+	elif isinstance(__config, str):
+		with open(__config, "r") as f:
 			__config = json.load(f)
-	elif type(__config) != dict:
+	elif not isinstance(__config, dict):
 		raise ValueError("Input configuration not recognized.")
 
 	static_folder = os.path.join(os.getcwd(), "static") if __config["ServeCWD"] else None

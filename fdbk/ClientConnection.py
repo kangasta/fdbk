@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import json
 import requests
 
@@ -10,18 +8,8 @@ class ClientConnection(DBConnection):
 		self.__url = url
 		self.__token = token
 
-	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
-		r = requests.post(self.__url + "/add/topic", json={
-			"name": name,
-			"type": type_str,
-			"description": description,
-			"fields": fields,
-			"units": units,
-			"summary": summary,
-			"visualization": visualization,
-			"metadata": metadata,
-			"form_submissions": form_submissions
-		})
+	def addTopic(self, name, **kwargs):
+		r = requests.post(self.__url + "/add/topic", json=DBConnection.generateTopicDict(name, **kwargs))
 		if r.status_code != requests.codes.ok:
 			raise RuntimeError(json.dumps(r.json()))
 		return r.json()["topic_id"]
@@ -30,7 +18,6 @@ class ClientConnection(DBConnection):
 		r = requests.post(self.__url + "/add/data/" + topic_id, json=values)
 		if r.status_code != requests.codes.ok:
 			raise RuntimeError(json.dumps(r.json()))
-		return None
 
 	def getTopics(self):
 		# TODO: Error handling

@@ -10,10 +10,9 @@ class VisualizationFuncs(object):
 	def __getitem__(self, key):
 		if key == "horseshoe":
 			return VisualizationFuncs.horseshoe
-		elif key == "line":
+		if key == "line":
 			return VisualizationFuncs.line
-		else:
-			return lambda data, field: None
+		return lambda data, field: None
 
 	@staticmethod
 	def horseshoe(data, field):
