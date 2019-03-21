@@ -1,6 +1,8 @@
 FROM python:3-alpine
 
-RUN pip install fdbk
+RUN apk add build-base linux-headers && \
+	pip install fdbk psutil && \
+	apk del build-base
 
 WORKDIR /app
 COPY sys_status.py ./
