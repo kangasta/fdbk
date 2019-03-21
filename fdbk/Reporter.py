@@ -3,7 +3,9 @@ from importlib import import_module
 from time import sleep
 
 class Reporter(object):
-	def __init__(self, data_source, db_connection='', db_parameters=[], topic_id=None, verbose=False):
+	def __init__(self, data_source, db_connection='', db_parameters=None, topic_id=None, verbose=False):
+		db_parameters = db_parameters if db_parameters is not None else []
+
 		self.__data_source = data_source
 		self.__topic_id = topic_id
 		self.__verbose = verbose

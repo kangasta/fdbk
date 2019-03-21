@@ -1,6 +1,3 @@
-from datetime import datetime
-from uuid import uuid4
-
 from fdbk import DBConnection
 
 class DictConnection(DBConnection):
@@ -9,24 +6,13 @@ class DictConnection(DBConnection):
 			"topics": []
 		}
 
-	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
-		topic_id = str(uuid4())
+	def addTopic(self, name, **kwargs):
+		topic_d = DBConnection.generateTopicDict(name, add_id=True, **kwargs)
 
-		self.__dict["topics"].append({
-			"name": name,
-			"id": topic_id,
-			"type": type_str,
-			"description": description,
-			"fields": fields,
-			"units": units,
-			"summary": summary,
-			"visualization": visualization,
-			"metadata": metadata,
-			"form_submissions": form_submissions
-		})
-		self.__dict[topic_id] = []
+		self.__dict["topics"].append(topic_d)
+		self.__dict[topic_d["id"]] = []
 
-		return topic_id
+		return topic_d["id"]
 
 	def addData(self, topic_id, values):
 		try:

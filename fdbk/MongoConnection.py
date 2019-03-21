@@ -1,6 +1,4 @@
-from datetime import datetime
 from pymongo import MongoClient
-from uuid import uuid4
 
 from fdbk import DBConnection
 
@@ -18,26 +16,15 @@ class MongoConnection(DBConnection):
 			db.authenticate(self.__username, self.__password, source=self.__auth_source)
 		return db
 
-	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
+	def addTopic(self, name, **kwargs):
 		with MongoClient(self.__mongo_url) as client:
 			db = self.__get_db(client)
 
-			topic_id = str(uuid4())
+			topic_d = DBConnection.generateTopicDict(name, add_id=True, **kwargs)
 
-			db["topics"].insert_one({
-				"name": name,
-				"id": topic_id,
-				"type": type_str,
-				"description": description,
-				"fields": fields,
-				"units": units,
-				"summary": summary,
-				"visualization": visualization,
-				"metadata": metadata,
-				"form_submissions": form_submissions
-			})
+			db["topics"].insert_one(topic_d)
 
-			return topic_id
+			return topic_d["id"]
 
 	def addData(self, topic_id, values):
 		with MongoClient(self.__mongo_url) as client:

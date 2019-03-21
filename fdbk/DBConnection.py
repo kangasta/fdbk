@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import uuid4
 
 from fdbk.DataTools import SummaryFuncs, VisualizationFuncs
 
@@ -19,8 +20,9 @@ class DBConnection(object):
 		"form_submissions"
 	]
 
-	def addTopic(self, name, type_str="undefined", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False):
-		'''Adds new topic to DB.
+	@staticmethod
+	def generateTopicDict(name, type_str="", description="", fields=None, units=None, summary=None, visualization=None, metadata=None, form_submissions=False, add_id=False):
+		'''Generate topic dictionary
 
 		Args:
 			name: Name of the topic.
@@ -32,6 +34,33 @@ class DBConnection(object):
 			visualization: List of visualization instructions for corresponding fields.
 			metadata: Dict of metadata for topic
 			form_submissions: Boolean to determine if data for this topic should be added through the API
+
+		Returns:
+			Generated topic dict
+
+		'''
+		topic_d = {
+			"name": name,
+			"type": type_str,
+			"description": description,
+			"fields": fields if fields is not None else [],
+			"units": units if units is not None else [],
+			"summary": summary if summary is not None else [],
+			"visualization": visualization if visualization is not None else [],
+			"metadata": metadata if metadata is not None else {},
+			"form_submissions": form_submissions
+		}
+
+		if add_id:
+			topic_d["id"] = str(uuid4())
+
+		return topic_d
+
+	def addTopic(self, name, **kwargs):
+		'''Adds new topic to DB.
+
+		Args:
+			name: Name of the topic.
 
 		Returns:
 			Topic ID of the newly created topic
