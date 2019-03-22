@@ -9,26 +9,44 @@ class ClientConnection(DBConnection):
 		self.__token = token
 
 	def addTopic(self, name, **kwargs):
-		r = requests.post(self.__url + "/topics", json=DBConnection.generateTopicDict(name, **kwargs))
-		if r.status_code != requests.codes.ok:
-			raise RuntimeError(json.dumps(r.json()))
-		return r.json()["topic_id"]
+		response = requests.post(self.__url + "/topics", json=DBConnection.generateTopicDict(name, **kwargs))
+
+		if not response.ok:
+			raise RuntimeError(json.dumps(response.json()))
+
+		return response.json()["topic_id"]
 
 	def addData(self, topic_id, values):
-		r = requests.post(self.__url + "/topics/" + topic_id + "/data", json=values)
-		if r.status_code != requests.codes.ok:
-			raise RuntimeError(json.dumps(r.json()))
+		response = requests.post(self.__url + "/topics/" + topic_id + "/data", json=values)
+
+		if not response.ok:
+			raise RuntimeError(json.dumps(response.json()))
 
 	def getTopics(self):
 		# TODO: Error handling
-		return requests.get(self.__url + "/topics").json()
+		response = requests.get(self.__url + "/topics")
+
+		if not response.ok:
+			raise RuntimeError(json.dumps(response.json()))
+
+		return response.json()
 
 	def getTopic(self, topic_id):
 		# TODO: Error handling
-		return requests.get(self.__url + "/topics" + topic_id).json()
+		response = requests.get(self.__url + "/topics" + topic_id)
+
+		if not response.ok:
+			raise RuntimeError(json.dumps(response.json()))
+
+		return response.json()
 
 	def getData(self, topic_id):
 		# TODO: Error handling
-		return requests.get(self.__url + "/topics/" + topic_id + "/data").json()
+		response = requests.get(self.__url + "/topics/" + topic_id + "/data")
+
+		if not response.ok:
+			raise RuntimeError(json.dumps(response.json()))
+
+		return response.json()
 
 ConnectionClass = ClientConnection

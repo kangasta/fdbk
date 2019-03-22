@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, send_from_directory
+from flask import jsonify, request
 
 class ServerHandlers(object):
 	def __init__(self, db_connection, config):

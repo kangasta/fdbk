@@ -6,6 +6,8 @@ try:
 except ImportError:
 	from mock import Mock, patch
 
+import requests
+
 from fdbk import ClientConnection
 from fdbk.Server import generateApp
 
@@ -16,6 +18,10 @@ class MockResponse(object):
 
 	def json(self):
 		return self.json_data
+
+	@property
+	def ok(self):
+		return self.status_code == requests.codes.ok
 
 class ClientConnectionTest(TestCase):
 	def setUp(self):
