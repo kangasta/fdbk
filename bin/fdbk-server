@@ -3,7 +3,7 @@
 import argparse
 import json
 
-from fdbk.server import generate_app
+from fdbk.server import generateApp
 
 def __generate_parser():
 	parser = argparse.ArgumentParser()
@@ -33,4 +33,4 @@ else:
 		__config = json.load(f)
 	__config["ServeCWD"] = __serve_cwd
 
-generate_app(config=__config, serve_cwd=__serve_cwd).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
+generateApp(config=__config, serve_cwd=__serve_cwd).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)

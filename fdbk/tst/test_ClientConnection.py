@@ -7,7 +7,7 @@ except ImportError:
 	from mock import Mock, patch
 
 from fdbk import ClientConnection
-from fdbk.server import generate_app
+from fdbk.server import generateApp
 
 class MockResponse(object):
 	def __init__(self, json_data, status_code):
@@ -19,7 +19,7 @@ class MockResponse(object):
 
 class ClientConnectionTest(TestCase):
 	def setUp(self):
-		self.__server = generate_app().test_client()
+		self.__server = generateApp().test_client()
 
 	def mock_requests_get(self, *args, **kwargs):
 		response = self.__server.get(*args, **kwargs)

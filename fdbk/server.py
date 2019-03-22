@@ -1,10 +1,12 @@
 from importlib import import_module
-import json, os, uuid
+import json
+import os
+import uuid
 
 from flask import Flask, jsonify, request, send_from_directory
 import requests
 
-def generate_app(config=None, serve_cwd=True):
+def generateApp(config=None, serve_cwd=True):
 	__DefaultConfig = {
 		"DBConnection": "DictConnection",
 		"DBParameters": [],
@@ -40,7 +42,7 @@ def generate_app(config=None, serve_cwd=True):
 		raise ValueError("Input configuration not recognized.")
 
 	static_folder = os.path.join(os.getcwd(), "static") if __config["ServeCWD"] else None
-	APP = Flask(__name__, static_folder=static_folder)
+	app = Flask(__name__, static_folder=static_folder)
 
 	__DBConnectionMod = import_module("fdbk." + __config["DBConnection"])
 	__DBConnection = __DBConnectionMod.ConnectionClass(*(__config["DBParameters"]))
@@ -48,11 +50,11 @@ def generate_app(config=None, serve_cwd=True):
 	# API
 
 	if __config["ServeCWD"]:
-		@APP.route('/')
+		@app.route('/')
 		def index():
 			return send_from_directory(os.getcwd(), 'index.html')
 
-	@APP.route('/add/topic', methods=["POST"])
+	@app.route('/add/topic', methods=["POST"])
 	def addTopic():
 		if "addTopic" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
@@ -74,21 +76,21 @@ def generate_app(config=None, serve_cwd=True):
 
 		try:
 			topic_id = __DBConnection.addTopic(topic, type_str=type_str, **json_in)
-		except KeyError as e:
+		except KeyError as error:
 			# Field not available in input data
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
-		except TypeError as e:
+		except TypeError as error:
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 400
 		return jsonify({
 			"topic_id": topic_id,
 			"success": "Topic successfully added to DB"
 		})
 
-	@APP.route('/add/data/<topic_id>', methods=["POST"])
+	@app.route('/add/data/<topic_id>', methods=["POST"])
 	def addData(topic_id):
 		if "addData" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
@@ -103,96 +105,96 @@ def generate_app(config=None, serve_cwd=True):
 			}), 404
 		try:
 			__DBConnection.addData(topic_id, json_in)
-		except KeyError as e:
+		except KeyError as error:
 			# Topic not defined
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
-		except ValueError as e:
+		except ValueError as error:
 			# Fields do not match with topic
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 400
 		return jsonify({
 			"success": "Data successfully added to DB"
 		})
 
-	@APP.route('/get/topics', methods=["GET"])
+	@app.route('/get/topics', methods=["GET"])
 	def getTopics():
 		if "getTopics" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
 		return jsonify(__DBConnection.getTopics())
 
-	@APP.route('/get/topic/<topic_id>', methods=["GET"])
+	@app.route('/get/topic/<topic_id>', methods=["GET"])
 	def getTopic(topic_id):
 		if "getTopic" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			topic_json = __DBConnection.getTopic(topic_id)
 			return jsonify(topic_json)
-		except KeyError as e:
+		except KeyError as error:
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
 
-	@APP.route('/get/data/<topic_id>', methods=["GET"])
+	@app.route('/get/data/<topic_id>', methods=["GET"])
 	def getData(topic_id):
 		if "getData" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getData(topic_id)
 			return jsonify(data)
-		except KeyError as e:
+		except KeyError as error:
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
 
-	@APP.route('/get/data/latest/<topic_id>', methods=["GET"])
+	@app.route('/get/data/latest/<topic_id>', methods=["GET"])
 	def getLatest(topic_id):
 		if "getLatest" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getLatest(topic_id)
 			return jsonify(data)
-		except Exception as e:
+		except Exception as error:
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
 
-	@APP.route('/get/summary/<topic_id>', methods=["GET"])
+	@app.route('/get/summary/<topic_id>', methods=["GET"])
 	def getSummary(topic_id):
 		if "getSummary" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getSummary(topic_id)
 			return jsonify(data)
-		except KeyError as e:
+		except KeyError as error:
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
 
-	@APP.route('/get/comparison/<topic_ids>', methods=["GET"])
+	@app.route('/get/comparison/<topic_ids>', methods=["GET"])
 	def getComparison(topic_ids):
 		if "getSummary" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getComparison(topic_ids.split(','))
 			return jsonify(data)
-		except KeyError as e:
+		except KeyError as error:
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
 
-	@APP.route('/get/overview', methods=["GET"])
+	@app.route('/get/overview', methods=["GET"])
 	def getOverview():
 		if "getOverview" not in __config["AllowedActions"]:
 			return jsonify(__ActionNotAllowedJSON), 403
 		try:
 			data = __DBConnection.getOverview()
 			return jsonify(data)
-		except KeyError as e:
+		except KeyError as error:
 			return jsonify({
-				"error": str(e)
+				"error": str(error)
 			}), 404
 
-	return APP
+	return app
