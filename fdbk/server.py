@@ -1,5 +1,6 @@
 from importlib import import_module
 import json
+import logging
 import os
 import uuid
 
@@ -46,6 +47,9 @@ def generateApp(config=None, serve_cwd=True):
 
 	__DBConnectionMod = import_module("fdbk." + __config["DBConnection"])
 	__DBConnection = __DBConnectionMod.ConnectionClass(*(__config["DBParameters"]))
+
+	app.logger.setLevel(logging.INFO)
+	app.logger.info('Created "' + __config["DBConnection"] + '" with parameters: ' + str(__config["DBParameters"]))
 
 	# API
 
