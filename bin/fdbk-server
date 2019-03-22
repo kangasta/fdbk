@@ -2,8 +2,9 @@
 
 import argparse
 import json
+import logging
 
-from fdbk.server import generateApp
+from fdbk.Server import generateApp
 
 def __generate_parser():
 	parser = argparse.ArgumentParser()
@@ -33,4 +34,4 @@ else:
 		__config = json.load(f)
 	__config["ServeCWD"] = __serve_cwd
 
-generateApp(config=__config, serve_cwd=__serve_cwd).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
+generateApp(config=__config, serve_cwd=__serve_cwd, log_level=logging.INFO).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
