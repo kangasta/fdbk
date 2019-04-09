@@ -30,3 +30,18 @@ class InfluxConnectionTest(TestCase):
 			},
 			'fields': data
 		}], database='default_db')
+
+	@patch('fdbk.InfluxConnection.InfluxDBClientWrapper.query')
+	def test_get_data_method_use_influx_python_api(self, query_mock):
+		C = InfluxConnection('Invalid URL!')
+		topic_id = C.addTopic('test_topic', fields=['number'], type_str='undefined')
+
+		query_mock.return_value = [{
+			'timestamp': '2019-04-10T22:11:00Z',
+			'topic_id': topic_id,
+			'number': 3
+		}]
+
+		data = C.getData(topic_id)
+
+		query_mock.assert_called_with("select * from undefined where topic_id='" + topic_id + "'", database='default_db')
