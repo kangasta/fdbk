@@ -7,6 +7,7 @@ import uuid
 from flask import Flask, jsonify, request, send_from_directory
 import requests
 
+from fdbk import Utils
 from ._ServerHandlers import ServerHandlers
 
 def generateApp(config=None, serve_cwd=True, log_level=logging.WARN):
@@ -39,8 +40,7 @@ def generateApp(config=None, serve_cwd=True, log_level=logging.WARN):
 	static_folder = os.path.join(os.getcwd(), "static") if config["ServeCWD"] else None
 	app = Flask(__name__, static_folder=static_folder)
 
-	db_connection_mod = import_module("fdbk." + config["DBConnection"])
-	db_connection = db_connection_mod.ConnectionClass(*(config["DBParameters"]))
+	db_connection = Utils.create_db_connection(config["DBConnection"], config["DBParameters"])
 
 	handlers = ServerHandlers(db_connection, config)
 

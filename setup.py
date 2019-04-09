@@ -16,6 +16,8 @@ setuptools.setup(
 	packages=setuptools.find_packages(),
 	scripts=["bin/fdbk-server"],
 	install_requires=[
+		# InfluxConnection
+		"influxdb",
 		# MongoConnection
 		"pymongo",
 		# server
