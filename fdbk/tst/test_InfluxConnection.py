@@ -15,6 +15,11 @@ class InfluxConnectionTest(TestCase):
 		self.assertEqual(len(C.getTopics()), 1)
 		self.assertEqual(C.getTopic(topic_id)['name'], 'test_topic')
 
+	def test_add_topic_ensures_type_str_is_present(self):
+		C = InfluxConnection('Invalid URL!')
+		topic_id = C.addTopic('test_topic')
+		self.assertEqual(C.getTopic(topic_id)['type'], 'undefined')
+
 	@patch('fdbk.InfluxConnection.InfluxDBClientWrapper.write_points')
 	def test_add_data_method_use_influx_python_api(self, write_mock):
 		C = InfluxConnection('Invalid URL!')
@@ -24,7 +29,7 @@ class InfluxConnectionTest(TestCase):
 		C.addData(topic_id, {'number': 3})
 
 		write_mock.assert_called_with([{
-			'measurement': '',
+			'measurement': 'undefined',
 			'tags': {
 				'topic_id': topic_id
 			},

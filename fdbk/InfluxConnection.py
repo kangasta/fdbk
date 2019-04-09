@@ -37,6 +37,8 @@ class InfluxConnection(DBConnection):
 				client.create_database(self.__db)
 
 	def addTopic(self, name, **kwargs):
+		if 'type_str' not in kwargs:
+			kwargs['type_str'] = 'undefined'
 		return self.__topics_connection.addTopic(name, **kwargs)
 
 	def addData(self, topic_id, values):
