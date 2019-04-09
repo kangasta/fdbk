@@ -4,15 +4,15 @@ from influxdb import InfluxDBClient
 
 from fdbk import DBConnection, Utils
 
-class InfluxDBClientWrapper(InfluxDBClient):
-	def __enter__(self):
-		return self
-
-	def __exit__(self, type, value, tb):
-		Timer(5, self.close)
-		return self
-
 class InfluxConnection(DBConnection):
+	class InfluxDBClientWrapper(InfluxDBClient):
+		def __enter__(self):
+			return self
+
+		def __exit__(self, type, value, tb):
+			Timer(5, self.close)
+			return self
+
 	def __init__(self, influx_url, db="default_db", username=None, password=None, topics_db='DictConnection', *topics_db_parameters):
 		self.__influx_url = influx_url
 		self.__db = db
@@ -24,7 +24,7 @@ class InfluxConnection(DBConnection):
 		self.__topics_connection = Utils.create_db_connection(topics_db, topics_db_parameters)
 
 	def __get_client(self):
-		return InfluxDBClientWrapper(
+		return InfluxConnection.InfluxDBClientWrapper(
 			host=self.__influx_url,
 			port=8086,
 			username=self.__username,
