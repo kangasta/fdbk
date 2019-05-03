@@ -1,9 +1,21 @@
+import json
+
 from fdbk import DBConnection
 
 class DictConnection(DBConnection):
-	def __init__(self):
+	def __init__(self, topics_db_backup=None):
+		self.__topics_backup = topics_db_backup
+		topics = []
+
+		if self.__topics_backup:
+			try:
+				with open(self.__topics_backup, 'r') as f:
+					topics = json.load(f)['topics']
+			except Exception: # This will be IOError on Python 2 and FileNotFoundError on Python 3
+				pass
+
 		self.__dict = {
-			"topics": []
+			"topics": topics
 		}
 
 	def addTopic(self, name, **kwargs):
@@ -11,6 +23,10 @@ class DictConnection(DBConnection):
 
 		self.__dict["topics"].append(topic_d)
 		self.__dict[topic_d["id"]] = []
+
+		if self.__topics_backup:
+			with open(self.__topics_backup, 'w') as f:
+				topics = json.dump({'topics': self.__dict["topics"]}, f)
 
 		return topic_d["id"]
 
