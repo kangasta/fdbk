@@ -1,3 +1,4 @@
+from os.path import expanduser
 import json
 
 from fdbk import DBConnection
@@ -9,7 +10,7 @@ class DictConnection(DBConnection):
 
 		if self.__topics_backup:
 			try:
-				with open(self.__topics_backup, 'r') as f:
+				with open(expanduser(self.__topics_backup), 'r') as f:
 					topics = json.load(f)['topics']
 			except Exception: # This will be IOError on Python 2 and FileNotFoundError on Python 3
 				pass
@@ -25,7 +26,7 @@ class DictConnection(DBConnection):
 		self.__dict[topic_d["id"]] = []
 
 		if self.__topics_backup:
-			with open(self.__topics_backup, 'w') as f:
+			with open(expanduser(self.__topics_backup), 'w') as f:
 				topics = json.dump({'topics': self.__dict["topics"]}, f)
 
 		return topic_d["id"]
