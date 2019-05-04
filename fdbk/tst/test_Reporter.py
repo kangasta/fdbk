@@ -63,6 +63,15 @@ class ReporterTest(TestCase):
 		R = Reporter(DS, 'DictConnection')
 		R.start(interval=0, num_samples=1)
 
+	def test_start_supports_non_numeric_values(self):
+		DS = TestDataSource(['qwe', 'asd', 'zxc'], 3)
+		R = Reporter(DS, 'DictConnection')
+		R.start(interval=0, num_samples=1)
+
+		C = R.connection
+		self.assertEqual(3, len(C.getData(R.topic_id)))
+		self.assertEqual('asd', C.getData(R.topic_id)[1]['number'])
+
 	def test_provides_averaging_over_push_interval(self):
 		DS = TestDataSource([0, 2, 4, 6, 8, 10], 6)
 		R = Reporter(DS, 'DictConnection')

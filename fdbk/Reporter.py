@@ -42,31 +42,46 @@ class Reporter(object):
 		if self.__verbose:
 			print("Push:\n" + json.dumps(data, indent=2, sort_keys=True))
 
+	def __average(self, interval, num_samples):
+		active_samples = num_samples
+		data = {}
+
+		for field in self.__data_source.topic["fields"]:
+			data[field] = 0
+
+		for _ in range(num_samples):
+			sample = self.__data_source.data
+			if sample is None:
+				raise StopIteration()
+			if None in sample.values():
+				# TODO warning for ignored samples
+				active_samples -= 1
+				continue
+			for key in sample:
+				data[key] += float(sample[key])
+			sleep(float(interval)/num_samples)
+
+		if active_samples > 0:
+			for key in data:
+				data[key] = float(data[key])/active_samples
+
+		return (data,active_samples,)
+
 	def start(self, interval=360, num_samples=60):
 		try:
 			while True:
-				data = {}
-				active_samples = num_samples
-
-				for field in self.__data_source.topic["fields"]:
-					data[field] = 0
-
-				for _ in range(num_samples):
-					sample = self.__data_source.data
-					if sample is None:
+				if num_samples > 1:
+					try:
+						data, active_samples = self.__average(interval, num_samples)
+					except StopIteration:
 						return
-					if None in sample.values():
-						# TODO warning for ignored samples
-						active_samples -= 1
-						continue
-					for key in sample:
-						data[key] += float(sample[key])
-					sleep(float(interval)/num_samples)
+				else:
+					data = self.__data_source.data
+					if data is None:
+						return
+					active_samples = 1
 
 				if active_samples > 0:
-					for key in data:
-						data[key] = float(data[key])/active_samples
-
 					try:
 						self.push(data)
 					except Exception as e:
