@@ -89,5 +89,8 @@ class Reporter(object):
 							print("Push failed: " + str(e))
 				elif self.__verbose:
 					print("Push skipped: No valid samples to average.")
+
+				if num_samples == 1:
+					sleep(interval)
 		except KeyboardInterrupt:
 			return
