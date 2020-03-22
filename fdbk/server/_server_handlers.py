@@ -1,5 +1,6 @@
 from flask import jsonify, request
 
+
 class ServerHandlers:
     def __init__(self, db_connection, config):
         self.__db_connection = db_connection
@@ -16,11 +17,13 @@ class ServerHandlers:
     def add_topic(self):
         if "add_topic" not in self.__config["AllowedActions"]:
             return jsonify(self.__action_not_allowed_json), 403
-        if "AddTokens" in self.__config and self.__config["AddTokens"] and ("token" not in request.args or request.args["token"] not in self.__config["AddTokens"]):
+        if "AddTokens" in self.__config and self.__config["AddTokens"] and (
+                "token" not in request.args or
+                request.args["token"] not in self.__config["AddTokens"]):
             return jsonify(self.__invalid_token_json), 403
         try:
             json_in = request.get_json()
-        except:
+        except BaseException:
             return jsonify({
                 "error": "No topic data provided in request"
             }), 404
@@ -33,7 +36,8 @@ class ServerHandlers:
             }), 404
 
         try:
-            topic_id = self.__db_connection.add_topic(topic, type_str=type_str, **json_in)
+            topic_id = self.__db_connection.add_topic(
+                topic, type_str=type_str, **json_in)
         except KeyError as error:
             # Field not available in input data
             return jsonify({
@@ -51,12 +55,14 @@ class ServerHandlers:
     def add_data(self, topic_id):
         if "add_data" not in self.__config["AllowedActions"]:
             return jsonify(self.__action_not_allowed_json), 403
-        if "AddTokens" in self.__config and self.__config["AddTokens"] and ("token" not in request.args or request.args["token"] not in self.__config["AddTokens"]):
+        if "AddTokens" in self.__config and self.__config["AddTokens"] and (
+                "token" not in request.args or
+                request.args["token"] not in self.__config["AddTokens"]):
             return jsonify(self.__invalid_token_json), 403
 
         try:
             json_in = request.get_json()
-        except:
+        except BaseException:
             return jsonify({
                 "error": "No topic data provided in request"
             }), 404

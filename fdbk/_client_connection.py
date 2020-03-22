@@ -3,13 +3,18 @@ import requests
 
 from fdbk import DBConnection
 
+
 class ClientConnection(DBConnection):
     def __init__(self, url, token=None):
         self.__url = url
         self.__token = token
 
     def add_topic(self, name, **kwargs):
-        response = requests.post(self.__url + "/topics", json=DBConnection.generate_topic_dict(name, **kwargs))
+        response = requests.post(
+            self.__url + "/topics",
+            json=DBConnection.generate_topic_dict(
+                name,
+                **kwargs))
 
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))
@@ -17,7 +22,8 @@ class ClientConnection(DBConnection):
         return response.json()["topic_id"]
 
     def add_data(self, topic_id, values):
-        response = requests.post(self.__url + "/topics/" + topic_id + "/data", json=values)
+        response = requests.post(
+            self.__url + "/topics/" + topic_id + "/data", json=values)
 
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))
@@ -48,5 +54,6 @@ class ClientConnection(DBConnection):
             raise RuntimeError(json.dumps(response.json()))
 
         return response.json()
+
 
 ConnectionClass = ClientConnection

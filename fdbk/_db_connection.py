@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from fdbk.data_tools import SummaryFuncs, VisualizationFuncs
 
+
 class DBConnection:
     '''Base class for DB connections.
     '''
@@ -21,7 +22,17 @@ class DBConnection:
     ]
 
     @staticmethod
-    def generate_topic_dict(name, type_str="", description="", fields=None, units=None, summary=None, visualization=None, metadata=None, form_submissions=False, add_id=True):
+    def generate_topic_dict(
+            name,
+            type_str="",
+            description="",
+            fields=None,
+            units=None,
+            summary=None,
+            visualization=None,
+            metadata=None,
+            form_submissions=False,
+            add_id=True):
         '''Generate topic dictionary
 
         Args:
@@ -31,9 +42,11 @@ class DBConnection:
             fields: List of data field names included in the topic.
             units: List of units for field.
             summary: List of summary instructions for corresponding fields.
-            visualization: List of visualization instructions for corresponding fields.
+            visualization: List of visualization instructions for corresponding
+                fields.
             metadata: Dict of metadata for topic
-            form_submissions: Boolean to determine if data for this topic should be added through the API
+            form_submissions: Boolean to determine if data for this topic
+                should be added through the API
 
         Returns:
             Generated topic dict
@@ -46,10 +59,11 @@ class DBConnection:
             "fields": fields if fields is not None else [],
             "units": units if units is not None else [],
             "summary": summary if summary is not None else [],
-            "visualization": visualization if visualization is not None else [],
+            "visualization": (
+                visualization if visualization is not None else []
+            ),
             "metadata": metadata if metadata is not None else {},
-            "form_submissions": form_submissions
-        }
+            "form_submissions": form_submissions}
 
         if add_id:
             topic_d["id"] = str(uuid4())
@@ -68,14 +82,16 @@ class DBConnection:
         Raises:
             KeyError: Topic already exists in DB
         '''
-        raise NotImplementedError("Functionality not implemented by selected DB connection")
+        raise NotImplementedError(
+            "Functionality not implemented by selected DB connection")
 
     def add_data(self, topic_id, values):
         '''Adds data under given topic in DB
 
         Args:
             topic_id: ID of the topic under which to add data.
-            values: Dictionary with field names as keys and field value as value.
+            values: Dictionary with field names as keys and field value as
+                value.
 
         Returns:
             None
@@ -84,13 +100,15 @@ class DBConnection:
             KeyError: Topic does not exist in DB
             ValueError: Values do not match those defined for the topic
         '''
-        raise NotImplementedError("Functionality not implemented by selected DB connection")
+        raise NotImplementedError(
+            "Functionality not implemented by selected DB connection")
 
     @staticmethod
     def generate_data_entry(topic_id, fields, values):
         '''Generates data entry to add to the DB
 
-        Validates that the fields match to the ones specified by the provided topic ID. Adds topic ID and timestamp to the provides values entry.
+        Validates that the fields match to the ones specified by the provided
+        topic ID. Adds topic ID and timestamp to the provides values entry.
 
         Args:
             topic_id: Topic ID to add to the entry
@@ -104,7 +122,10 @@ class DBConnection:
             ValueError: provided values do not match to the provided fields
         '''
         if len(fields) != len(values):
-            raise ValueError("The number of given values does not match with the number of fields defined for topic")
+            raise ValueError(
+                "The number of given values does not match with "
+                "the number of fields defined for topic"
+            )
 
         data = {
             "topic_id": topic_id,
@@ -112,7 +133,8 @@ class DBConnection:
         }
         for field in fields:
             if field not in values.keys():
-                raise ValueError("Value for field '" + field + "' not present in input data")
+                raise ValueError("Value for field '" + field +
+                                 "' not present in input data")
             data[field] = values[field]
 
         return data
@@ -123,7 +145,8 @@ class DBConnection:
         Returns:
             List of topic dicts
         '''
-        raise NotImplementedError("Functionality not implemented by selected DB connection")
+        raise NotImplementedError(
+            "Functionality not implemented by selected DB connection")
 
     @staticmethod
     def generate_topics_list(topics):
@@ -154,7 +177,8 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        raise NotImplementedError("Functionality not implemented by selected DB connection")
+        raise NotImplementedError(
+            "Functionality not implemented by selected DB connection")
 
     @staticmethod
     def generate_topic_response(topic):
@@ -183,13 +207,15 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        raise NotImplementedError("Functionality not implemented by selected DB connection")
+        raise NotImplementedError(
+            "Functionality not implemented by selected DB connection")
 
     @staticmethod
     def generate_data_response(data, fields):
         ''' Generate standardized data list from DB entries
 
-        Standardizes the DB entries from the DB and converts the timestamps to ISO 8601 strings.
+        Standardizes the DB entries from the DB and converts the timestamps to
+        ISO 8601 strings.
 
         Args:
             data: List of DB data entries
@@ -211,7 +237,9 @@ class DBConnection:
     def get_latest(self, topic_id):
         '''Get latest data element of given topic
 
-        Note that this is an unoptimized implementation that wont be efficient for most databases. This method should be overridden by inheriting classes.
+        Note that this is an unoptimized implementation that wont be efficient
+        for most databases. This method should be overridden by inheriting
+        classes.
 
         Args:
             topic_id: ID of the topic to find
@@ -232,17 +260,20 @@ class DBConnection:
         elif key == "visualization":
             funcs = VisualizationFuncs()
         else:
-            raise ValueError("Data tools target '" + str(key) + "' not supported.")
+            raise ValueError("Data tools target '" +
+                             str(key) + "' not supported.")
 
         results = []
         warnings = []
 
         for instruction in topic_d[key]:
             if instruction["method"] not in funcs:
-                warnings.append("The requested method '" + instruction["method"] + "' is not supported.")
+                warnings.append("The requested method '" +
+                                instruction["method"] + "' is not supported.")
                 continue
             if instruction["field"] not in topic_d["fields"]:
-                warnings.append("The requested field '" + instruction["field"] + "' is undefined.")
+                warnings.append("The requested field '" +
+                                instruction["field"] + "' is undefined.")
                 continue
 
             result = funcs[instruction["method"]](
@@ -251,7 +282,10 @@ class DBConnection:
             if result is not None:
                 result["topic_name"] = topic_d["name"]
                 try:
-                    result["unit"] = next(i["unit"] for i in topic_d["units"] if i["field"] == instruction["field"])
+                    result["unit"] = next(
+                        i["unit"] for i in topic_d["units"] if (
+                            i["field"] == instruction["field"])
+                        )
                 except StopIteration:
                     result["unit"] = None
 
@@ -288,7 +322,8 @@ class DBConnection:
         summary_d["summaries"].extend(results)
         summary_d["warnings"].extend(warnings)
 
-        results, warnings = self._run_data_tools("visualization", topic_d, data_d)
+        results, warnings = self._run_data_tools(
+            "visualization", topic_d, data_d)
         summary_d["visualizations"].extend(results)
         summary_d["warnings"].extend(warnings)
 
@@ -300,7 +335,8 @@ class DBConnection:
         elif key == "visualization":
             result_key = "visualizations"
         else:
-            raise ValueError("Data tools target '" + str(key) + "' not supported.")
+            raise ValueError("Data tools target '" +
+                             str(key) + "' not supported.")
 
         if topic_ids is None:
             topic_ids = [topic["id"] for topic in self.get_topics()]
@@ -339,13 +375,15 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        return self._run_data_tools_for_many(key="visualization", topic_ids=topic_ids)
+        return self._run_data_tools_for_many(
+            key="visualization", topic_ids=topic_ids)
 
     def get_overview(self, topic_ids=None):
         '''Get overview of the data
 
         Args:
-            topic_ids: List of topic IDs to overview. If not given, overview of all topics is generated.
+            topic_ids: List of topic IDs to overview. If not given, overview
+            of all topics is generated.
 
         Returns:
             Dictionary with overview of the topics data
@@ -353,7 +391,8 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        return self._run_data_tools_for_many(key="summary", topic_ids=topic_ids)
+        return self._run_data_tools_for_many(
+            key="summary", topic_ids=topic_ids)
 
 
 ConnectionClass = DBConnection

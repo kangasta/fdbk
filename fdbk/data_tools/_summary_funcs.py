@@ -1,5 +1,6 @@
 from numbers import Number
 
+
 class SummaryFuncs:
     __FUNCS = [
         "average",
@@ -24,14 +25,15 @@ class SummaryFuncs:
 
     @staticmethod
     def average(data, field):
-        filtered_data = [d[field] for d in data if isinstance(d[field], Number)]
+        filtered_data = [d[field]
+                         for d in data if isinstance(d[field], Number)]
         if not filtered_data:
             return None
 
         return {
             "type": "average",
             "field": field,
-            "value": sum(i/float(len(filtered_data)) for i in filtered_data)
+            "value": sum(i / float(len(filtered_data)) for i in filtered_data)
         }
 
     @staticmethod

@@ -3,6 +3,7 @@ import json
 
 from fdbk import DBConnection
 
+
 class DictConnection(DBConnection):
     def __init__(self, topics_db_backup=None):
         self.__topics_backup = topics_db_backup
@@ -33,9 +34,11 @@ class DictConnection(DBConnection):
 
     def add_data(self, topic_id, values):
         try:
-            topic_d = next(i for i in self.__dict["topics"] if i["id"] == topic_id)
+            topic_d = next(
+                i for i in self.__dict["topics"] if i["id"] == topic_id)
         except StopIteration:
-            raise KeyError("Topic ID '" + topic_id + "' not found from database")
+            raise KeyError("Topic ID '" + topic_id +
+                           "' not found from database")
         fields = topic_d["fields"]
 
         data = DBConnection.generate_data_entry(topic_id, fields, values)
@@ -47,21 +50,25 @@ class DictConnection(DBConnection):
 
     def get_topic(self, topic_id):
         try:
-            topic = next(i for i in self.__dict["topics"] if i["id"] == topic_id)
+            topic = next(
+                i for i in self.__dict["topics"] if i["id"] == topic_id)
         except StopIteration:
-            raise KeyError("Topic ID '" + topic_id + "' not found from database")
+            raise KeyError("Topic ID '" + topic_id +
+                           "' not found from database")
 
         return DBConnection.generate_topic_response(topic)
 
-
     def get_data(self, topic_id):
         try:
-            topic_d = next(i for i in self.__dict["topics"] if i["id"] == topic_id)
+            topic_d = next(
+                i for i in self.__dict["topics"] if i["id"] == topic_id)
         except StopIteration:
-            raise KeyError("Topic ID '" + topic_id + "' not found from database")
+            raise KeyError("Topic ID '" + topic_id +
+                           "' not found from database")
         fields = topic_d["fields"]
         data = self.__dict[topic_id]
 
         return DBConnection.generate_data_response(data, fields)
+
 
 ConnectionClass = DictConnection

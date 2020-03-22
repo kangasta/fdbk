@@ -7,6 +7,7 @@ from flask import Flask, request, send_from_directory
 from fdbk import utils
 from ._server_handlers import ServerHandlers
 
+
 def generate_app(config=None, serve_cwd=True, log_level=logging.WARN):
     default_config = {
         "DBConnection": "DictConnection",
@@ -33,15 +34,20 @@ def generate_app(config=None, serve_cwd=True, log_level=logging.WARN):
     elif not isinstance(config, dict):
         raise ValueError("Input configuration not recognized.")
 
-    static_folder = os.path.join(os.getcwd(), "static") if config["ServeCWD"] else None
+    static_folder = os.path.join(
+        os.getcwd(), "static") if config["ServeCWD"] else None
     app = Flask(__name__, static_folder=static_folder)
 
-    db_connection = utils.create_db_connection(config["DBConnection"], config["DBParameters"])
+    db_connection = utils.create_db_connection(
+        config["DBConnection"], config["DBParameters"])
 
     handlers = ServerHandlers(db_connection, config)
 
-    app.logger.setLevel(log_level) # pylint: disable=no-member
-    app.logger.info('Created "' + config["DBConnection"] + '" with parameters: ' + str(config["DBParameters"])) # pylint: disable=no-member
+    app.logger.setLevel(log_level)  # pylint: disable=no-member
+    app.logger.info('Created "' +  # pylint: disable=no-member
+                    config["DBConnection"] +
+                    '" with parameters: ' +
+                    str(config["DBParameters"]))
 
     # API
 

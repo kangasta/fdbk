@@ -3,8 +3,10 @@ from time import sleep
 
 from fdbk import utils
 
+
 class Reporter:
-    def __init__(self, data_source, db_connection='', db_parameters=None, topic_id=None, verbose=False):
+    def __init__(self, data_source, db_connection='',
+                 db_parameters=None, topic_id=None, verbose=False):
         db_parameters = db_parameters if db_parameters is not None else []
 
         self.__data_source = data_source
@@ -16,9 +18,11 @@ class Reporter:
             self.__create_topic()
 
     def __create_client(self, db_connection, db_parameters):
-        self.__client = utils.create_db_connection(db_connection, db_parameters)
+        self.__client = utils.create_db_connection(
+            db_connection, db_parameters)
         if self.__verbose:
-            print("Created fdbk DB connection of type '" + db_connection + "' with parameters " + str(db_parameters))
+            print("Created fdbk DB connection of type '" +
+                  db_connection + "' with parameters " + str(db_parameters))
 
     def __create_topic(self):
         topic_d = self.__data_source.topic
@@ -59,11 +63,11 @@ class Reporter:
                 continue
             for key in sample:
                 data[key] += float(sample[key])
-            sleep(float(interval)/num_samples)
+            sleep(float(interval) / num_samples)
 
         if active_samples > 0:
             for key in data:
-                data[key] = float(data[key])/active_samples
+                data[key] = float(data[key]) / active_samples
 
         return (data, active_samples,)
 
@@ -72,7 +76,8 @@ class Reporter:
             while True:
                 if num_samples > 1:
                     try:
-                        data, active_samples = self.__average(interval, num_samples)
+                        data, active_samples = self.__average(
+                            interval, num_samples)
                     except StopIteration:
                         return
                 else:
