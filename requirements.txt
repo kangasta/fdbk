@@ -1,5 +1,9 @@
 .
 
-#unittest
+# Static analysis
+pycodestyle
+pylint
+
+# Unittest
 coverage
 mock
