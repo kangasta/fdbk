@@ -1,14 +1,14 @@
 {
-	"DBConnection": "DictConnection",
-	"DBParameters": [],
-	"AllowedActions": [
-		"addData",
-		"getData",
-		"getLatest",
-		"getTopics",
-		"getTopic",
-		"getSummary"
-	],
-	"AddTokens": ["2f45", "976c"],
-	"ServeCWD": true
+    "DBConnection": "DictConnection",
+    "DBParameters": [],
+    "AllowedActions": [
+        "add_data",
+        "get_data",
+        "get_latest",
+        "get_topics",
+        "get_topic",
+        "get_summary"
+    ],
+    "AddTokens": ["2f45", "976c"],
+    "ServeCWD": true
 }

@@ -27,7 +27,7 @@ response=$(curl -sd @post_data/topic.json -H "Content-Type: application/json" -X
 topic_id=$(echo "${response}" | python3 -c "import json,sys; print(json.load(sys.stdin)['topic_id']);");
 
 for i in 1 2 3 4 5; do
-	curl -d @post_data/data-${i}.json -H "Content-Type: application/json" -X POST -L localhost:8080/topics/${topic_id}/data;
+    curl -d @post_data/data-${i}.json -H "Content-Type: application/json" -X POST -L localhost:8080/topics/${topic_id}/data;
 done;
 ```
 

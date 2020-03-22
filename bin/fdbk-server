@@ -7,31 +7,31 @@ import logging
 from fdbk.Server import generateApp
 
 def __generate_parser():
-	parser = argparse.ArgumentParser()
-	parser.add_argument("-c","--config-file",
-		help="configuration file path",
-		default="",
-		type=str)
-	parser.add_argument("--host",
-		help="hosts to serve to (default = 0.0.0.0)",
-		default="0.0.0.0",
-		type=str)
-	parser.add_argument("-p","--port",
-		help="port to serve from (default = 8080)",
-		default=8080,
-		type=int)
-	parser.add_argument("--no-front",
-		help="Disable serving CWD",
-		action="store_true")
-	return parser
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c","--config-file",
+        help="configuration file path",
+        default="",
+        type=str)
+    parser.add_argument("--host",
+        help="hosts to serve to (default = 0.0.0.0)",
+        default="0.0.0.0",
+        type=str)
+    parser.add_argument("-p","--port",
+        help="port to serve from (default = 8080)",
+        default=8080,
+        type=int)
+    parser.add_argument("--no-front",
+        help="Disable serving CWD",
+        action="store_true")
+    return parser
 
 __args = __generate_parser().parse_args()
 __serve_cwd = not __args.no_front
 if not __args.config_file:
-	__config = None
+    __config = None
 else:
-	with open(__args.config_file, "r") as f:
-		__config = json.load(f)
-	__config["ServeCWD"] = __serve_cwd
+    with open(__args.config_file, "r") as f:
+        __config = json.load(f)
+    __config["ServeCWD"] = __serve_cwd
 
 generateApp(config=__config, serve_cwd=__serve_cwd, log_level=logging.INFO).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)

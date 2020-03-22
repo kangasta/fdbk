@@ -4,93 +4,93 @@ from time import sleep
 from fdbk import Utils
 
 class Reporter(object):
-	def __init__(self, data_source, db_connection='', db_parameters=None, topic_id=None, verbose=False):
-		db_parameters = db_parameters if db_parameters is not None else []
+    def __init__(self, data_source, db_connection='', db_parameters=None, topic_id=None, verbose=False):
+        db_parameters = db_parameters if db_parameters is not None else []
 
-		self.__data_source = data_source
-		self.__topic_id = topic_id
-		self.__verbose = verbose
+        self.__data_source = data_source
+        self.__topic_id = topic_id
+        self.__verbose = verbose
 
-		self.__create_client(db_connection, db_parameters)
-		if self.__topic_id is None:
-			self.__create_topic()
+        self.__create_client(db_connection, db_parameters)
+        if self.__topic_id is None:
+            self.__create_topic()
 
-	def __create_client(self, db_connection, db_parameters):
-		self.__client = Utils.create_db_connection(db_connection, db_parameters)
-		if self.__verbose:
-			print("Created fdbk DB connection of type '" + db_connection + "' with parameters " + str(db_parameters))
+    def __create_client(self, db_connection, db_parameters):
+        self.__client = Utils.create_db_connection(db_connection, db_parameters)
+        if self.__verbose:
+            print("Created fdbk DB connection of type '" + db_connection + "' with parameters " + str(db_parameters))
 
-	def __create_topic(self):
-		topic_d = self.__data_source.topic
+    def __create_topic(self):
+        topic_d = self.__data_source.topic
 
-		if self.__verbose:
-			print("Creating topic '" + topic_d["name"] + "' to fdbk")
+        if self.__verbose:
+            print("Creating topic '" + topic_d["name"] + "' to fdbk")
 
-		self.__topic_id = self.__client.addTopic(**topic_d)
+        self.__topic_id = self.__client.add_topic(**topic_d)
 
-	@property
-	def connection(self):
-		return self.__client
+    @property
+    def connection(self):
+        return self.__client
 
-	@property
-	def topic_id(self):
-		return self.__topic_id
+    @property
+    def topic_id(self):
+        return self.__topic_id
 
-	def push(self, data):
-		self.__client.addData(self.__topic_id, data)
+    def push(self, data):
+        self.__client.add_data(self.__topic_id, data)
 
-		if self.__verbose:
-			print("Push:\n" + json.dumps(data, indent=2, sort_keys=True))
+        if self.__verbose:
+            print("Push:\n" + json.dumps(data, indent=2, sort_keys=True))
 
-	def __average(self, interval, num_samples):
-		active_samples = num_samples
-		data = {}
+    def __average(self, interval, num_samples):
+        active_samples = num_samples
+        data = {}
 
-		for field in self.__data_source.topic["fields"]:
-			data[field] = 0
+        for field in self.__data_source.topic["fields"]:
+            data[field] = 0
 
-		for _ in range(num_samples):
-			sample = self.__data_source.data
-			if sample is None:
-				raise StopIteration()
-			if None in sample.values():
-				# TODO warning for ignored samples
-				active_samples -= 1
-				continue
-			for key in sample:
-				data[key] += float(sample[key])
-			sleep(float(interval)/num_samples)
+        for _ in range(num_samples):
+            sample = self.__data_source.data
+            if sample is None:
+                raise StopIteration()
+            if None in sample.values():
+                # TODO warning for ignored samples
+                active_samples -= 1
+                continue
+            for key in sample:
+                data[key] += float(sample[key])
+            sleep(float(interval)/num_samples)
 
-		if active_samples > 0:
-			for key in data:
-				data[key] = float(data[key])/active_samples
+        if active_samples > 0:
+            for key in data:
+                data[key] = float(data[key])/active_samples
 
-		return (data,active_samples,)
+        return (data,active_samples,)
 
-	def start(self, interval=360, num_samples=60):
-		try:
-			while True:
-				if num_samples > 1:
-					try:
-						data, active_samples = self.__average(interval, num_samples)
-					except StopIteration:
-						return
-				else:
-					data = self.__data_source.data
-					if data is None:
-						return
-					active_samples = 1
+    def start(self, interval=360, num_samples=60):
+        try:
+            while True:
+                if num_samples > 1:
+                    try:
+                        data, active_samples = self.__average(interval, num_samples)
+                    except StopIteration:
+                        return
+                else:
+                    data = self.__data_source.data
+                    if data is None:
+                        return
+                    active_samples = 1
 
-				if active_samples > 0:
-					try:
-						self.push(data)
-					except Exception as e:
-						if self.__verbose:
-							print("Push failed: " + str(e))
-				elif self.__verbose:
-					print("Push skipped: No valid samples to average.")
+                if active_samples > 0:
+                    try:
+                        self.push(data)
+                    except Exception as e:
+                        if self.__verbose:
+                            print("Push failed: " + str(e))
+                elif self.__verbose:
+                    print("Push skipped: No valid samples to average.")
 
-				if num_samples == 1:
-					sleep(interval)
-		except KeyboardInterrupt:
-			return
+                if num_samples == 1:
+                    sleep(interval)
+        except KeyboardInterrupt:
+            return
