@@ -36,11 +36,12 @@ See `fdbk-server --help` for other options. The server is configured via a confi
 Run unit tests with command:
 
 ```bash
-python3 -m unittest discover -s fdbk/tst/
+python3 -m unittest discover -s tst/
 ```
 
 Get test coverage with commands:
+
 ```bash
-coverage run -m unittest discover -s fdbk/tst/
+coverage run -m unittest discover -s tst/
 coverage report -m
 ```
