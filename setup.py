@@ -7,7 +7,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="fdbk",
-    version="1.0.5",
+    version="2.0.0",
     author="Toni Kangas",
     description="Backend and DB wrapper for feedback collection system",
     long_description=long_description,

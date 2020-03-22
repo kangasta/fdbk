@@ -14,6 +14,7 @@ class ClientConnection(DBConnection):
             self.__url + "/topics",
             json=DBConnection.generate_topic_dict(
                 name,
+                add_id=False,
                 **kwargs))
 
         if not response.ok:
