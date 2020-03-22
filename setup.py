@@ -16,16 +16,10 @@ setuptools.setup(
 	packages=setuptools.find_packages(),
 	scripts=["bin/fdbk-server"],
 	install_requires=[
-		# InfluxConnection
-		"influxdb",
-		# MongoConnection
-		"pymongo",
-		# server
 		"flask",
 		"requests"
 	],
 	classifiers=(
-		"Programming Language :: Python :: 2.7",
 		"Programming Language :: Python :: 3",
 		"License :: OSI Approved :: MIT License",
 		"Operating System :: OS Independent",

@@ -1,14 +1,5 @@
-#InfluxConnection
-influxdb
-
-#MongoConnection
-pymongo
-
-#server
-flask
-requests
+.
 
 #unittest
 coverage
 mock
-mongomock
