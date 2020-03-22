@@ -3,7 +3,7 @@ from time import sleep
 
 from fdbk import utils
 
-class Reporter(object):
+class Reporter:
     def __init__(self, data_source, db_connection='', db_parameters=None, topic_id=None, verbose=False):
         db_parameters = db_parameters if db_parameters is not None else []
 
@@ -65,7 +65,7 @@ class Reporter(object):
             for key in data:
                 data[key] = float(data[key])/active_samples
 
-        return (data,active_samples,)
+        return (data, active_samples,)
 
     def start(self, interval=360, num_samples=60):
         try:

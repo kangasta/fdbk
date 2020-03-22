@@ -1,6 +1,6 @@
 from numbers import Number
 
-class SummaryFuncs(object):
+class SummaryFuncs:
     __FUNCS = [
         "average",
         "latest",

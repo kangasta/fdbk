@@ -1,4 +1,4 @@
-class VisualizationFuncs(object):
+class VisualizationFuncs:
     __FUNCS = [
         "horseshoe",
         "line"

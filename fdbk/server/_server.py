@@ -1,11 +1,8 @@
-from importlib import import_module
 import json
 import logging
 import os
-import uuid
 
-from flask import Flask, jsonify, request, send_from_directory
-import requests
+from flask import Flask, request, send_from_directory
 
 from fdbk import utils
 from ._server_handlers import ServerHandlers
@@ -28,7 +25,6 @@ def generate_app(config=None, serve_cwd=True, log_level=logging.WARN):
         "ServeCWD": serve_cwd
     }
 
-    config = config
     if not config:
         config = default_config
     elif isinstance(config, str):

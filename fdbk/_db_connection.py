@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fdbk.data_tools import SummaryFuncs, VisualizationFuncs
 
-class DBConnection(object):
+class DBConnection:
     '''Base class for DB connections.
     '''
 

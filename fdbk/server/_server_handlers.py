@@ -1,6 +1,6 @@
 from flask import jsonify, request
 
-class ServerHandlers(object):
+class ServerHandlers:
     def __init__(self, db_connection, config):
         self.__db_connection = db_connection
         self.__config = config
