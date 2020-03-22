@@ -12,7 +12,7 @@ class DictConnection(DBConnection):
             try:
                 with open(expanduser(self.__topics_backup), 'r') as f:
                     topics = json.load(f)['topics']
-            except Exception: # This will be IOError on Python 2 and FileNotFoundError on Python 3
+            except FileNotFoundError:
                 pass
 
         self.__dict = {
@@ -27,7 +27,7 @@ class DictConnection(DBConnection):
 
         if self.__topics_backup:
             with open(expanduser(self.__topics_backup), 'w') as f:
-                topics = json.dump({'topics': self.__dict["topics"]}, f)
+                json.dump({'topics': self.__dict["topics"]}, f)
 
         return topic_d["id"]
 

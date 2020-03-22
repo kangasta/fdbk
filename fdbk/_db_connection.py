@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from fdbk.DataTools import SummaryFuncs, VisualizationFuncs
+from fdbk.data_tools import SummaryFuncs, VisualizationFuncs
 
 class DBConnection(object):
     '''Base class for DB connections.

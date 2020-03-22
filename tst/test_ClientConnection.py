@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 import requests
 
 from fdbk import ClientConnection
-from fdbk.Server import generateApp
+from fdbk.server import generate_app
 
 class MockResponse(object):
     def __init__(self, json_data, status_code):
@@ -22,7 +22,7 @@ class MockResponse(object):
 
 class ClientConnectionTest(TestCase):
     def setUp(self):
-        self.__server = generateApp().test_client()
+        self.__server = generate_app().test_client()
 
     def mock_requests_get(self, *args, **kwargs):
         response = self.__server.get(*args, **kwargs)
@@ -57,7 +57,7 @@ class ClientConnectionTest(TestCase):
     def test_add_topic_triggers_correct_call(self):
         c = ClientConnection("")
         with patch('requests.post', side_effect=self.mock_requests_post), patch('fdbk.DictConnection.add_topic', return_value="topic_id") as add_topic:
-            c.add_topic("topic", type_str="test")
+            c.add_topic("topic", type_str="test", add_id=False)
             add_topic.assert_called_with("topic", type_str="test", description="", fields=[], units=[], summary=[], visualization=[], metadata={}, form_submissions=False)
 
     def test_add_data_triggers_correct_call(self):

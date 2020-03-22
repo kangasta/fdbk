@@ -1,8 +1,8 @@
-from .DBConnection import DBConnection
+from ._db_connection import DBConnection
 
-from .ClientConnection import ClientConnection
-from .DictConnection import DictConnection
+from ._client_connection import ClientConnection
+from ._dict_connection import DictConnection
 
-from .Reporter import Reporter
+from .reporter import Reporter
 
 NAME = "fdbk"

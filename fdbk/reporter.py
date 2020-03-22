@@ -1,7 +1,7 @@
 import json
 from time import sleep
 
-from fdbk import Utils
+from fdbk import utils
 
 class Reporter(object):
     def __init__(self, data_source, db_connection='', db_parameters=None, topic_id=None, verbose=False):
@@ -16,7 +16,7 @@ class Reporter(object):
             self.__create_topic()
 
     def __create_client(self, db_connection, db_parameters):
-        self.__client = Utils.create_db_connection(db_connection, db_parameters)
+        self.__client = utils.create_db_connection(db_connection, db_parameters)
         if self.__verbose:
             print("Created fdbk DB connection of type '" + db_connection + "' with parameters " + str(db_parameters))
 
