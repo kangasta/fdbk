@@ -9,7 +9,7 @@ install:
 script:
 - pycodestyle fdbk
 - pylint -E --enable=invalid-name,unused-import,useless-object-inheritance fdbk
-- coverage run --source fdbk/ -m unittest discover -s tst/
+- coverage run --branch --source fdbk/ -m unittest discover -s tst/
 - coverage report -m
 deploy:
   provider: pypi
