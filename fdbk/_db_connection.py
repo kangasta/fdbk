@@ -285,7 +285,7 @@ class DBConnection:
                     result["unit"] = next(
                         i["unit"] for i in topic_d["units"] if (
                             i["field"] == instruction["field"])
-                        )
+                    )
                 except StopIteration:
                     result["unit"] = None
 
