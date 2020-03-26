@@ -209,3 +209,20 @@ class ReporterTest(TestCase):
         with freeze_time(datetime(2020,1,1,1,33)):
             R.report(dict(a=1))
             add_mock.assert_called()
+
+    def test_topic_creation_fails_without_data_source(self):
+        with self.assertRaises(ValueError):
+            R = Reporter(None, 'DictConnection')
+
+    def test_data_collection_fails_without_data_source(self):
+        R = Reporter(None, 'DictConnection', topic_id='123')
+
+        with self.assertRaises(ValueError):
+            R.start()
+
+    def test_data_can_be_pushed_to_existing_topic(self):
+        R = Reporter(None, 'DictConnection', topic_id='TBD')
+        topic_id = R.connection.add_topic(**TestDataSource([],0).topic)
+        R._topic_id = topic_id
+
+        R.push(dict(a=1))

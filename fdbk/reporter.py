@@ -74,7 +74,7 @@ class _Data:
 class Reporter:
     def __init__(
             self,
-            data_source,
+            data_source=None,
             db_connection='',
             db_parameters=None,
             topic_id=None,
@@ -105,6 +105,9 @@ class Reporter:
                     f"'{db_connection}' with parameters {str(db_parameters)}")
 
     def _create_topic(self):
+        if not self._data_source:
+            raise ValueError('Cannot create new topic without data source')
+
         topic_d = self._data_source.topic
 
         self._print(f"Creating topic '{topic_d['name']}' to fdbk")
@@ -169,6 +172,9 @@ class Reporter:
                 sleep(float(interval) / num_samples)
 
     def start(self, interval=360, num_samples=60):
+        if not self._data_source:
+            raise ValueError('Cannot collect data without data source')
+
         try:
             while True:
                 try:
