@@ -3,10 +3,12 @@
 import argparse
 import json
 import logging
+import sys
 
 from fdbk.server import generate_app
+from fdbk import __version__
 
-def __generate_parser():
+def _generate_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c","--config-file",
         help="configuration file path",
@@ -23,15 +25,23 @@ def __generate_parser():
     parser.add_argument("--no-front",
         help="Disable serving CWD",
         action="store_true")
+    parser.add_argument("-v", "--version",
+        help="Print package version",
+        action="store_true")
     return parser
 
-__args = __generate_parser().parse_args()
-__serve_cwd = not __args.no_front
-if not __args.config_file:
-    __config = None
-else:
-    with open(__args.config_file, "r") as f:
-        __config = json.load(f)
-    __config["ServeCWD"] = __serve_cwd
+_args = _generate_parser().parse_args()
 
-generate_app(config=__config, serve_cwd=__serve_cwd, log_level=logging.INFO).run(use_reloader=True, host=__args.host, port=__args.port, threaded=True)
+if _args.version:
+    print(f"fdbk {__version__}")
+    sys.exit()
+
+_serve_cwd = not _args.no_front
+if not _args.config_file:
+    _config = None
+else:
+    with open(_args.config_file, "r") as f:
+        _config = json.load(f)
+    _config["ServeCWD"] = _serve_cwd
+
+generate_app(config=_config, serve_cwd=_serve_cwd, log_level=logging.INFO).run(use_reloader=True, host=_args.host, port=_args.port, threaded=True)
