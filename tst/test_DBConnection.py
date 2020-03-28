@@ -22,7 +22,7 @@ class DBConnectionTest(TestCase):
 
     def test_summary_and_visualization_funcs_handle_empty_lists(self):
         summaries = ["average", "latest"]
-        visualizations = ["horseshoe", "line"]
+        visualizations = ["doughnut", "line"]
 
         for summary, visualization in zip(summaries, visualizations):
             summary_d = {"field":"number", "method": summary}
@@ -34,11 +34,13 @@ class DBConnectionTest(TestCase):
             C.get_summary(topic_id)
 
     def test_get_summary_produces_summary(self):
+        types = ("doughnut", "pie",)
+
         summary_d = {"field":"number", "method":"average"}
-        visualization_d = {"field":"number", "method":"horseshoe"}
+        visualization_l = [dict(field="number", method=_type) for _type in types]
 
         C = DictConnection()
-        topic_id = C.add_topic("topic", description="description", fields=["number"], summary=[summary_d], visualization=[visualization_d])
+        topic_id = C.add_topic("topic", description="description", fields=["number"], summary=[summary_d], visualization=visualization_l)
         C.add_data(topic_id, {"number": 3})
         C.add_data(topic_id, {"number": 4})
         C.add_data(topic_id, {"number": 2})
@@ -51,17 +53,17 @@ class DBConnectionTest(TestCase):
         self.assertEqual(summary["summaries"][0]["type"], "average")
 
         self.assertEqual(summary["visualizations"], [{
-            "type": "horseshoe",
+            "type": type_,
             "field": "number",
             "topic_name": "topic",
             "labels": [2,3,4],
             "data":[1,1,1],
             "unit": None
-        }])
+        } for type_ in types])
 
     def test_get_summary_ignores_invalid_fields(self):
         summary_d = {"field":"number", "method":"average"}
-        visualization_d = {"field":"number", "method":"horseshoe"}
+        visualization_d = {"field":"number", "method":"doughnut"}
 
         C = DictConnection()
         topic_id = C.add_topic("topic", description="description", fields=["letter"], summary=[summary_d], visualization=[visualization_d])
@@ -173,7 +175,7 @@ class DBConnectionTest(TestCase):
         self.assertEqual(summary["summaries"][1]["value"], data[2]["timestamp"])
 
     def test_get_comparison_produces_comparison(self):
-        visualization_d = {"field":"number", "method":"horseshoe"}
+        visualization_d = {"field":"number", "method":"doughnut"}
 
         topic_ids = []
         C = DictConnection()
@@ -214,7 +216,7 @@ class DBConnectionTest(TestCase):
 
     def test_overview_and_comparison_include_units(self):
         summary_d = {"field":"number", "method":"latest"}
-        visualization_d = {"field":"number", "method":"horseshoe"}
+        visualization_d = {"field":"number", "method":"doughnut"}
         units_d = {"field":"number", "unit":"scalar"}
 
         C = DictConnection()
