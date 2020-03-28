@@ -86,13 +86,9 @@ if __name__ == '__main__':
     import json
 
     from fdbk import Reporter
+    from fdbk.utils import get_reporter_argparser
 
-    parser = ArgumentParser()
-
-    parser.add_argument("db_parameters", nargs="+", type=str, help="Parameters for fdbk DB connection.")
-    parser.add_argument("--db-connection", type=str, default="ClientConnection", help="fdbk DB connection to use (default=ClientConnection)")
-    parser.add_argument("--interval", "-i", type=float, default=360.0, help="Data pushing interval in seconds.")
-    parser.add_argument("--num-samples", "-n", type=int, default=60, help="Number of samples to average during the push interval")
+    parser = get_reporter_argparser()
 
     parser.add_argument("--target", "-t", action="append", default=[], type=str, nargs=2, metavar=("name","url"), help="Add target to monitor.")
     parser.add_argument("--target-file", "-f", type=str, help="Add targets from json file to monitor.")
@@ -107,5 +103,5 @@ if __name__ == '__main__':
 
     NET_STATUS = NetStatus(targets_cmd + targets_file)
 
-    REPORTER = Reporter(NET_STATUS, args.db_connection, args.db_parameters)
+    REPORTER = Reporter(NET_STATUS, args.db_connection, args.db_parameters, verbose=args.verbose)
     REPORTER.start(interval=args.interval, num_samples=args.num_samples)
