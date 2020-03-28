@@ -144,7 +144,8 @@ class Reporter:
         except Exception as e:
             self._print(f"Push failed: {str(e)}")
         else:
-            self._print(f"Push:\n{json.dumps(data, indent=2, sort_keys=True)}")
+            self._print(
+                f"Push:\n{json.dumps(_data, indent=2, sort_keys=True)}")
         finally:
             if not data:
                 self._data = None
