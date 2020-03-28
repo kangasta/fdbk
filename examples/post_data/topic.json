@@ -40,7 +40,7 @@
   "visualization": [
     {
       "field": "stars",
-      "method": "horseshoe"
+      "method": "doughnut"
     },
     {
       "field": "stars",

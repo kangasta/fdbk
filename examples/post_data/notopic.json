@@ -22,7 +22,7 @@
   "visualization": [
     {
       "field": "field",
-      "method": "horseshoe"
+      "method": "doughnut"
     },
     {
       "field": "field",

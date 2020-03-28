@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from fdbk.data_tools import SummaryFuncs, VisualizationFuncs
+from fdbk.data_tools import summary_funcs, visualization_funcs
 
 
 class DBConnection:
@@ -256,9 +256,9 @@ class DBConnection:
 
     def _run_data_tools(self, key, topic_d, data):
         if key == "summary":
-            funcs = SummaryFuncs()
+            funcs = summary_funcs
         elif key == "visualization":
-            funcs = VisualizationFuncs()
+            funcs = visualization_funcs
         else:
             raise ValueError("Data tools target '" +
                              str(key) + "' not supported.")
