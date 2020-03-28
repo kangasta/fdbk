@@ -5,4 +5,4 @@ from ._dict_connection import DictConnection
 
 from .reporter import Reporter
 
-NAME = "fdbk"
+from ._version import __version__

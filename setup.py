@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 
+import re
 import setuptools
+
+with open("fdbk/_version.py", "r") as f:
+    try:
+        version = re.search(
+            r"__version__\s*=\s*[\"']([^\"']+)[\"']",f.read()).group(1)
+    except:
+        raise RuntimeError('Version info not available')
 
 with open("README.md", "r") as f:
     long_description = f.read()
 
 setuptools.setup(
     name="fdbk",
-    version="2.0.0",
+    version=version,
     author="Toni Kangas",
     description="Backend and DB wrapper for feedback collection system",
     long_description=long_description,
