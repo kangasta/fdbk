@@ -53,12 +53,9 @@ class DBConnectionTest(TestCase):
         self.assertEqual(summary["summaries"][0]["type"], "average")
 
         self.assertEqual(summary["visualizations"], [{
+            "id": f"number-{type_}",
             "type": type_,
-            "field": "number",
-            "topic_name": "topic",
-            "labels": [2,3,4],
-            "data":[1,1,1],
-            "unit": None
+            "data": {"datasets": [{"data": [1,1,1], "label": "topic"}], "labels": [2,3,4],}
         } for type_ in types])
 
     def test_get_summary_ignores_invalid_fields(self):
@@ -103,16 +100,13 @@ class DBConnectionTest(TestCase):
         C.add_data(topic_id, {"number": 3})
         summary = C.get_summary(topic_id)
 
-        self.assertEqual(summary["visualizations"][0]["field"], "number")
+        self.assertEqual(summary["visualizations"][0]["id"], "number-line")
         self.assertEqual(summary["visualizations"][0]["type"], "line")
 
         iso8601z_re = r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z"
-        field_to_test = summary["visualizations"][0]["data"][0]["x"]
+        field_to_test = summary["visualizations"][0]["data"]["datasets"][0]["data"][0]["x"]
 
-        try: # Python 3
-            self.assertRegex(field_to_test, iso8601z_re)
-        except AttributeError: # Python 2
-            self.assertRegexpMatches(field_to_test, iso8601z_re)
+        self.assertRegex(field_to_test, iso8601z_re)
 
     def test_latest_summary_returns_latest_item(self):
         summary_d = {"field":"letter", "method":"latest"}
@@ -194,7 +188,7 @@ class DBConnectionTest(TestCase):
         self.assertEqual(comparison["topic_names"], ["topic_0", "topic_1", "topic_2"])
         self.assertEqual(comparison["fields"], ["number"])
 
-        self.assertEqual(len(comparison["visualizations"]), 3)
+        self.assertEqual(len(comparison["visualizations"]), 1)
 
     def test_get_overview_produces_overview(self):
         summary_d = {"field":"number", "method":"latest"}

@@ -49,7 +49,7 @@ def last_falsy(data, field):
     return last(False, data, field)
 
 
-summary_funcs = dict(
+SUMMARY_FUNCS = dict(
     average=average,
     latest=latest,
     last_truthy=last_truthy,
