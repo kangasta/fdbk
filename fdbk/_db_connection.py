@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from fdbk.data_tools import summary_funcs, visualization_funcs
+from fdbk.utils import visualizations_to_charts
 
 
 class DBConnection:
@@ -324,7 +325,7 @@ class DBConnection:
 
         results, warnings = self._run_data_tools(
             "visualization", topic_d, data_d)
-        summary_d["visualizations"].extend(results)
+        summary_d["visualizations"] = visualizations_to_charts(results)
         summary_d["warnings"].extend(warnings)
 
         return summary_d
@@ -359,6 +360,10 @@ class DBConnection:
             results, warnings = self._run_data_tools(key, topic_d, data_d)
             result_d[result_key].extend(results)
             result_d["warnings"].extend(warnings)
+
+        if key == "visualization":
+            result_d[result_key] = visualizations_to_charts(
+                result_d[result_key])
 
         result_d["fields"] = list(set(result_d["fields"]))
         return result_d

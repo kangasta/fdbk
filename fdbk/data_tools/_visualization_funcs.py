@@ -21,7 +21,7 @@ def pie(data, field):
     return doughnut(data, field, "pie")
 
 
-visualization_funcs = dict(
+VISUALIZATION_FUNCS = dict(
     doughnut=doughnut,
     line=line,
     pie=pie,
