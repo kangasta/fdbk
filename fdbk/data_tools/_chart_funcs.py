@@ -1,6 +1,9 @@
 def doughnut(data, field, type_="doughnut"):
     field_data = [a[field] for a in data]
 
+    if not field_data:
+        return None
+
     return dict(
         type=type_,
         field=field,
@@ -10,6 +13,9 @@ def doughnut(data, field, type_="doughnut"):
 
 
 def line(data, field):
+    if not data:
+        return None
+
     return dict(
         type="line",
         field=field,
@@ -21,7 +27,7 @@ def pie(data, field):
     return doughnut(data, field, "pie")
 
 
-VISUALIZATION_FUNCS = dict(
+CHART_FUNCS = dict(
     doughnut=doughnut,
     line=line,
     pie=pie,

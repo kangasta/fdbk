@@ -40,6 +40,9 @@ def visualizations_to_charts(visualizations):
     charts = {}
 
     for i in visualizations:
+        if not i:
+            continue
+
         field = i.get('field')
         type_ = i.get('type')
         key = f"{field}-{type_}"

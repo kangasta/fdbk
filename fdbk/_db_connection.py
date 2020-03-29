@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from fdbk.data_tools import summary_funcs, visualization_funcs
+from fdbk.data_tools import functions as data_functions
 from fdbk.utils import visualizations_to_charts
 from fdbk.validate import validate_topic_dict
 
@@ -259,11 +259,7 @@ class DBConnection:
         return self.get_data(topic_id)[-1]
 
     def _run_data_tools(self, key, topic_d, data):
-        if key == "summary":
-            funcs = summary_funcs
-        elif key == "visualization":
-            funcs = visualization_funcs
-        else:
+        if key not in ("summary", "visualization"):
             raise ValueError("Data tools target '" +
                              str(key) + "' not supported.")
 
@@ -271,7 +267,7 @@ class DBConnection:
         warnings = []
 
         for instruction in topic_d[key]:
-            if instruction["method"] not in funcs:
+            if instruction["method"] not in data_functions:
                 warnings.append("The requested method '" +
                                 instruction["method"] + "' is not supported.")
                 continue
@@ -280,7 +276,7 @@ class DBConnection:
                                 instruction["field"] + "' is undefined.")
                 continue
 
-            result = funcs[instruction["method"]](
+            result = data_functions[instruction["method"]](
                 data, instruction["field"]
             )
             if result is not None:
