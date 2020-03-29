@@ -4,5 +4,7 @@ Functions to ease the simple data analysis done by the DBConnection.
 
 '''
 
-from ._summary_funcs import SUMMARY_FUNCS as summary_funcs
-from ._visualization_funcs import VISUALIZATION_FUNCS as visualization_funcs
+from ._value_funcs import *
+from ._chart_funcs import *
+
+functions = {**VALUE_FUNCS, **CHART_FUNCS}  # pylint: disable=invalid-name
