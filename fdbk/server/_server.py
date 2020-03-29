@@ -86,6 +86,10 @@ def generate_app(config=None, serve_cwd=True, log_level=logging.WARN):
     def comparison(topic_ids):
         return handlers.get_comparison(topic_ids)
 
+    @app.route('/comparison', methods=['GET'])
+    def comparison_all():
+        return handlers.get_comparison()
+
     @app.route('/overview', methods=['GET'])
     def overview():
         return handlers.get_overview()

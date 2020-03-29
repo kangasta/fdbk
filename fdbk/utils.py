@@ -21,9 +21,9 @@ def create_db_connection(db_plugin, db_parameters):
             "Loading or creating fdbk DB connection failed: " + str(e))
 
 
-def _create_chart(key, type_):
+def _create_chart(type_, field):
     return dict(
-        id=key,
+        field=field,
         type=type_,
         data=dict(datasets=[], labels=[]),
     )
@@ -40,11 +40,12 @@ def visualizations_to_charts(visualizations):
     charts = {}
 
     for i in visualizations:
+        field = i.get('field')
         type_ = i.get('type')
-        key = f"{i.get('field')}-{type_}"
+        key = f"{field}-{type_}"
 
         if key not in charts:
-            charts[key] = _create_chart(key, type_)
+            charts[key] = _create_chart(type_, field)
 
         charts[key]['data']['labels'] = (
             list(set(charts[key]['data']['labels'] + i.get("labels", []))))

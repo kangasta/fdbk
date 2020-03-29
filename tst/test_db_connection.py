@@ -53,7 +53,7 @@ class DBConnectionTest(TestCase):
         self.assertEqual(summary["summaries"][0]["type"], "average")
 
         self.assertEqual(summary["visualizations"], [{
-            "id": f"number-{type_}",
+            "field": "number",
             "type": type_,
             "data": {"datasets": [{"data": [1,1,1], "label": "topic"}], "labels": [2,3,4],}
         } for type_ in types])
@@ -100,7 +100,7 @@ class DBConnectionTest(TestCase):
         C.add_data(topic_id, {"number": 3})
         summary = C.get_summary(topic_id)
 
-        self.assertEqual(summary["visualizations"][0]["id"], "number-line")
+        self.assertEqual(summary["visualizations"][0]["field"], "number")
         self.assertEqual(summary["visualizations"][0]["type"], "line")
 
         iso8601z_re = r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{6}Z"
