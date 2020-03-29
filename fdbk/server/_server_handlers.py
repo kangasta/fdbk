@@ -131,11 +131,14 @@ class ServerHandlers:
                 "error": str(error)
             }), 404
 
-    def get_comparison(self, topic_ids):
-        if "get_summary" not in self.__config["AllowedActions"]:
+    def get_comparison(self, topic_ids=None):
+        if "get_comparison" not in self.__config["AllowedActions"]:
             return jsonify(self.__action_not_allowed_json), 403
+
+        topic_ids_a = topic_ids.split(',') if topic_ids else None
+
         try:
-            data = self.__db_connection.get_comparison(topic_ids.split(','))
+            data = self.__db_connection.get_comparison(topic_ids_a)
             return jsonify(data)
         except KeyError as error:
             return jsonify({

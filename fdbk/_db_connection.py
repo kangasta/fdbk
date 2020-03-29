@@ -339,7 +339,7 @@ class DBConnection:
             raise ValueError("Data tools target '" +
                              str(key) + "' not supported.")
 
-        if topic_ids is None:
+        if not topic_ids:
             topic_ids = [topic["id"] for topic in self.get_topics()]
 
         result_d = {
@@ -368,7 +368,7 @@ class DBConnection:
         result_d["fields"] = list(set(result_d["fields"]))
         return result_d
 
-    def get_comparison(self, topic_ids):
+    def get_comparison(self, topic_ids=None):
         '''Get comparison of the data of the given topic IDs
 
         Args:
