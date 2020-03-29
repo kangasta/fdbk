@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from fdbk.data_tools import summary_funcs, visualization_funcs
 from fdbk.utils import visualizations_to_charts
+from fdbk.validate import validate_topic_dict
 
 
 class DBConnection:
@@ -68,6 +69,8 @@ class DBConnection:
 
         if add_id:
             topic_d["id"] = str(uuid4())
+
+        validate_topic_dict(topic_d)
 
         return topic_d
 

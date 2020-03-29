@@ -3,6 +3,8 @@ from unittest import TestCase
 
 from unittest.mock import Mock, patch
 
+from jsonschema.exceptions import ValidationError
+
 from fdbk import DictConnection
 from fdbk import DBConnection
 
@@ -19,6 +21,13 @@ class DBConnectionTest(TestCase):
             C.get_topic("topic")
         with self.assertRaises(NotImplementedError):
             C.get_data("topic")
+
+    def test_topic_is_validated_on_creation(self):
+        summary_d = {"field":"number", "method":"average"}
+
+        C = DictConnection()
+        with self.assertRaises(ValidationError):
+            C.add_topic("topic", description="description", fields=["number"], summary=summary_d)
 
     def test_summary_and_visualization_funcs_handle_empty_lists(self):
         summaries = ["average", "latest"]

@@ -22,8 +22,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/kangasta/fdbk",
     packages=setuptools.find_packages(),
+    package_data={
+        'fdbk': ['schemas/*.json']
+    },
     scripts=["bin/fdbk-server"],
     install_requires=[
+        "importlib_resources; python_version<'3.7'",
+        "jsonschema",
         "flask",
         "requests"
     ],
