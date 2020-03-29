@@ -32,15 +32,12 @@
       "type": "array",
       "items": {"$ref": "#/definitions/units"}
     },
-    "summary": {
+    "data_tools": {
       "type": "array",
       "items": {"$ref": "#/definitions/data_tools"}
     },
-    "visualization": {
-      "type": "array",
-      "items": {"$ref": "#/definitions/data_tools"}
-    },
-    "form_submissions": {"type": "boolean"}
+    "metadata": {"type": "object"}
   },
-  "required": ["name", "fields"]
+  "required": ["name", "fields"],
+  "additionalProperties": false
 }

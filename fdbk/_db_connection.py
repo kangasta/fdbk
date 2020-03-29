@@ -1,8 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from fdbk.data_tools import functions as data_functions
-from fdbk.utils import visualizations_to_charts
+from fdbk.data_tools import functions as data_functions, post_process
 from fdbk.validate import validate_topic_dict
 
 
@@ -17,10 +16,8 @@ class DBConnection:
         "description",
         "fields",
         "units",
-        "summary",
-        "visualization",
+        "data_tools",
         "metadata",
-        "form_submissions"
     ]
 
     @staticmethod
@@ -30,10 +27,8 @@ class DBConnection:
             description="",
             fields=None,
             units=None,
-            summary=None,
-            visualization=None,
+            data_tools=None,
             metadata=None,
-            form_submissions=False,
             add_id=True):
         '''Generate topic dictionary
 
@@ -43,12 +38,10 @@ class DBConnection:
             description: Description of the topic.
             fields: List of data field names included in the topic.
             units: List of units for field.
-            summary: List of summary instructions for corresponding fields.
-            visualization: List of visualization instructions for corresponding
+            data_tools: List of data_tools instructions for corresponding
                 fields.
             metadata: Dict of metadata for topic
-            form_submissions: Boolean to determine if data for this topic
-                should be added through the API
+            add_id: Boolean to tell if id should be added
 
         Returns:
             Generated topic dict
@@ -60,12 +53,9 @@ class DBConnection:
             "description": description,
             "fields": fields if fields is not None else [],
             "units": units if units is not None else [],
-            "summary": summary if summary is not None else [],
-            "visualization": (
-                visualization if visualization is not None else []
-            ),
+            "data_tools": data_tools if data_tools is not None else [],
             "metadata": metadata if metadata is not None else {},
-            "form_submissions": form_submissions}
+        }
 
         if add_id:
             topic_d["id"] = str(uuid4())
@@ -258,15 +248,11 @@ class DBConnection:
         '''
         return self.get_data(topic_id)[-1]
 
-    def _run_data_tools(self, key, topic_d, data):
-        if key not in ("summary", "visualization"):
-            raise ValueError("Data tools target '" +
-                             str(key) + "' not supported.")
-
+    def _run_data_tools(self, topic_d, data):
         results = []
         warnings = []
 
-        for instruction in topic_d[key]:
+        for instruction in topic_d['data_tools']:
             if instruction["method"] not in data_functions:
                 warnings.append("The requested method '" +
                                 instruction["method"] + "' is not supported.")
@@ -280,14 +266,14 @@ class DBConnection:
                 data, instruction["field"]
             )
             if result is not None:
-                result["topic_name"] = topic_d["name"]
+                result["payload"]["topic_name"] = topic_d["name"]
                 try:
-                    result["unit"] = next(
+                    result["payload"]["unit"] = next(
                         i["unit"] for i in topic_d["units"] if (
                             i["field"] == instruction["field"])
                     )
                 except StopIteration:
-                    result["unit"] = None
+                    pass
 
             results.append(result)
 
@@ -313,39 +299,26 @@ class DBConnection:
             "description": topic_d["description"],
             "units": topic_d["units"],
             "num_entries": len(data_d),
-            "summaries": [],
-            "visualizations": [],
+            "statistics": [],
             "warnings": []
         }
 
-        results, warnings = self._run_data_tools("summary", topic_d, data_d)
-        summary_d["summaries"].extend(results)
-        summary_d["warnings"].extend(warnings)
-
-        results, warnings = self._run_data_tools(
-            "visualization", topic_d, data_d)
-        summary_d["visualizations"] = visualizations_to_charts(results)
+        results, warnings = self._run_data_tools(topic_d, data_d)
+        summary_d["statistics"] = post_process(results)
         summary_d["warnings"].extend(warnings)
 
         return summary_d
 
-    def _run_data_tools_for_many(self, key=None, topic_ids=None):
-        if key == "summary":
-            result_key = "summaries"
-        elif key == "visualization":
-            result_key = "visualizations"
-        else:
-            raise ValueError("Data tools target '" +
-                             str(key) + "' not supported.")
-
+    def _run_data_tools_for_many(self, topic_ids=None):
         if not topic_ids:
+            # TODO: only fetch topics list once in this function
             topic_ids = [topic["id"] for topic in self.get_topics()]
 
         result_d = {
             "topic_names": [],
             "topic_ids": topic_ids,
             "fields": [],
-            result_key: [],
+            "statistics": [],
             "warnings": []
         }
 
@@ -356,14 +329,12 @@ class DBConnection:
             result_d["topic_names"].append(topic_d["name"])
             result_d["fields"].extend(topic_d["fields"])
 
-            results, warnings = self._run_data_tools(key, topic_d, data_d)
-            result_d[result_key].extend(results)
+            results, warnings = self._run_data_tools(topic_d, data_d)
+            result_d["statistics"].extend(results)
             result_d["warnings"].extend(warnings)
 
-        if key == "visualization":
-            result_d[result_key] = visualizations_to_charts(
-                result_d[result_key])
-
+        result_d["statistics"] = post_process(
+            result_d["statistics"])
         result_d["fields"] = list(set(result_d["fields"]))
         return result_d
 
@@ -379,8 +350,7 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        return self._run_data_tools_for_many(
-            key="visualization", topic_ids=topic_ids)
+        return self._run_data_tools_for_many(topic_ids=topic_ids)
 
     def get_overview(self, topic_ids=None):
         '''Get overview of the data
@@ -395,8 +365,7 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        return self._run_data_tools_for_many(
-            key="summary", topic_ids=topic_ids)
+        return self._run_data_tools_for_many(topic_ids=topic_ids)
 
 
 ConnectionClass = DBConnection

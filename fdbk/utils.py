@@ -21,42 +21,6 @@ def create_db_connection(db_plugin, db_parameters):
             "Loading or creating fdbk DB connection failed: " + str(e))
 
 
-def _create_chart(type_, field):
-    return dict(
-        field=field,
-        type=type_,
-        data=dict(datasets=[], labels=[]),
-    )
-
-
-def _visualization_to_dataset(visualization):
-    return dict(
-        data=visualization.get('data'),
-        label=visualization.get('topic_name')
-    )
-
-
-def visualizations_to_charts(visualizations):
-    charts = {}
-
-    for i in visualizations:
-        if not i:
-            continue
-
-        field = i.get('field')
-        type_ = i.get('type')
-        key = f"{field}-{type_}"
-
-        if key not in charts:
-            charts[key] = _create_chart(type_, field)
-
-        charts[key]['data']['labels'] = (
-            list(set(charts[key]['data']['labels'] + i.get("labels", []))))
-        charts[key]["data"]['datasets'].append(_visualization_to_dataset(i))
-
-    return list(charts.values())
-
-
 def get_reporter_argparser(parser=None):
     if not parser:
         parser = ArgumentParser()
