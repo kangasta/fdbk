@@ -2,6 +2,7 @@ import json
 import requests
 
 from fdbk import DBConnection
+from fdbk.utils import generate_topic_dict
 
 
 class ClientConnection(DBConnection):
@@ -12,7 +13,7 @@ class ClientConnection(DBConnection):
     def add_topic(self, name, **kwargs):
         response = requests.post(
             self.__url + "/topics",
-            json=DBConnection.generate_topic_dict(
+            json=generate_topic_dict(
                 name,
                 add_id=False,
                 **kwargs))
