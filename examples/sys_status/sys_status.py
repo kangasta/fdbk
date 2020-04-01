@@ -22,11 +22,10 @@ class SysStatus(object):
             "description": "System status monitor.",
             "fields": fields,
             "units": units,
-            "summary": list(map(lambda field: {
+            "data_tools": list(map(lambda field: {
                 "field": field,
                 "method":"latest"
-            }, fields)),
-            "visualization": list(map(lambda field: {
+            }, fields)) + list(map(lambda field: {
                 "field": field,
                 "method":"line"
             }, fields))
