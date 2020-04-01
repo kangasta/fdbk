@@ -58,7 +58,7 @@ class ClientConnectionTest(TestCase):
         c = ClientConnection("")
         with patch('requests.post', side_effect=self.mock_requests_post), patch('fdbk.DictConnection.add_topic', return_value="topic_id") as add_topic:
             c.add_topic("topic", type_str="test")
-            add_topic.assert_called_with("topic", type_str="test", description="", fields=[], units=[], data_tools=[], metadata={})
+            add_topic.assert_called_with("topic", type_str="test", description=None, fields=[], units=[], data_tools=[], metadata={})
 
     def test_add_data_triggers_correct_call(self):
         c = ClientConnection("")

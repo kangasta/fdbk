@@ -22,8 +22,18 @@
   "properties": {
     "id": {"type": "string"},
     "name": {"type": "string"},
-    "type": {"type": "string"},
-    "description": {"type": "string"},
+    "type": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "null"}
+      ]
+    },
+    "description": {
+      "oneOf": [
+        {"type": "string"},
+        {"type": "null"}
+      ]
+    },
     "fields": {
       "type": "array",
       "items": {"type": "string"}
