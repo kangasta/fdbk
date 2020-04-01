@@ -98,11 +98,11 @@ class ServerHandlers:
                 "error": str(error)
             }), 404
 
-    def get_data(self, topic_id):
+    def get_data(self, topic_id, since=None, until=None, limit=None):
         if "get_data" not in self.__config["AllowedActions"]:
             return jsonify(self.__action_not_allowed_json), 403
         try:
-            data = self.__db_connection.get_data(topic_id)
+            data = self.__db_connection.get_data(topic_id, since, until, limit)
             return jsonify(data)
         except KeyError as error:
             return jsonify({

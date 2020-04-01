@@ -2,6 +2,7 @@ import json
 import logging
 import os
 
+from dateutil.parser import isoparse
 from flask import Flask, request, send_from_directory
 
 from fdbk import utils
@@ -67,10 +68,20 @@ def generate_app(config=None, serve_cwd=True, log_level=logging.WARN):
     def topics_get(topic_id):
         return handlers.get_topic(topic_id)
 
+    def _parse_param(param, parser):
+        try:
+            return isoparse(param)
+        except Exception:
+            return None
+
     @app.route('/topics/<topic_id>/data', methods=['GET', 'POST'])
     def data(topic_id):
         if request.method == 'GET':
-            return handlers.get_data(topic_id)
+            return handlers.get_data(
+                topic_id,
+                _parse_param(request.args.get('since'), isoparse),
+                _parse_param(request.args.get('until'), isoparse),
+                _parse_param(request.args.get('limit'), int))
         if request.method == 'POST':
             return handlers.add_data(topic_id)
 

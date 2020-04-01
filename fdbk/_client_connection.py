@@ -48,9 +48,16 @@ class ClientConnection(DBConnection):
 
         return response.json()
 
-    def get_data(self, topic_id):
+    def get_data(self, topic_id, since=None, until=None, limit=None):
         # TODO: Error handling
-        response = requests.get(self.__url + "/topics/" + topic_id + "/data")
+        query = (
+            "" if not since else f"since={since.isoformat()}Z",
+            "" if not until else f"until={until.isoformat()}Z",
+            "" if not limit else f"limit={limit}",
+        )
+        query = "&".join(i for i in query if i)
+        query = f"?{query}" if query else ""
+        response = requests.get(f"{self.__url}/topics/{topic_id}/data{query}")
 
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))
