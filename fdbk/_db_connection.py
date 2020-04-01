@@ -62,11 +62,14 @@ class DBConnection:
         raise NotImplementedError(
             "Functionality not implemented by selected DB connection")
 
-    def get_data(self, topic_id):
+    def get_data(self, topic_id, since=None, until=None, limit=None):
         '''Get all data under given topic
 
         Args:
             topic_id: ID of the topic to find
+            since: Datetime of the earliest entry to include
+            until: Datetime of the most recent entry to include
+            limit: Number of entries to include from the most recent
 
         Returns:
             List of all data dicts under topic with matching name

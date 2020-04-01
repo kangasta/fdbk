@@ -64,7 +64,7 @@ class DictConnection(DBConnection):
 
         return generate_topic_response(topic)
 
-    def get_data(self, topic_id):
+    def get_data(self, topic_id, since=None, until=None, limit=None):
         try:
             topic_d = next(
                 i for i in self.__dict["topics"] if i["id"] == topic_id)
@@ -73,6 +73,16 @@ class DictConnection(DBConnection):
                            "' not found from database")
         fields = topic_d["fields"]
         data = self.__dict[topic_id]
+
+        if since:
+            data = (i for i in data if i.get('timestamp') >= since)
+        if until:
+            data = (i for i in data if i.get('timestamp') <= until)
+
+        data = list(data)
+
+        if limit:
+            data = data[-(limit or 0):]
 
         return generate_data_response(data, fields)
 
