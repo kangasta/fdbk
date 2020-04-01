@@ -77,8 +77,8 @@ def generate_data_response(data, fields):
 
 def generate_topic_dict(
         name,
-        type_str="",
-        description="",
+        type_str=None,
+        description=None,
         fields=None,
         units=None,
         data_tools=None,
