@@ -29,11 +29,10 @@ class NetStatus(object):
                 'field': 'elapsed',
                 'unit': 'ms',
             }],
-            "summary": [{
+            "data_tools": [{
                 "field": 'elapsed',
                 "method": "latest",
-            }],
-            "visualization": [{
+            },{
                 "field": 'elapsed',
                 "method": "line",
             }],
