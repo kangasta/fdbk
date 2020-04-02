@@ -15,7 +15,11 @@ TOPIC_FIELDS = [
 ]
 
 
-def generate_data_entry(topic_id, fields, values):
+def timestamp_as_str(timestamp):
+    return f"{timestamp.isoformat()}Z"
+
+
+def generate_data_entry(topic_id, fields, values, convert_timestamps=False):
     '''Generates data entry to add to the DB
 
     Validates that the fields match to the ones specified by the provided
@@ -38,9 +42,13 @@ def generate_data_entry(topic_id, fields, values):
             "the number of fields defined for topic"
         )
 
+    timestamp = datetime.utcnow()
+    if convert_timestamps:
+        timestamp = timestamp_as_str(timestamp)
+
     data = {
         "topic_id": topic_id,
-        "timestamp": datetime.utcnow()
+        "timestamp": timestamp
     }
     for field in fields:
         if field not in values.keys():
@@ -68,7 +76,7 @@ def generate_data_response(data, fields):
     for d in data:
         ret.append({
             "topic_id": d["topic_id"],
-            "timestamp": d["timestamp"].isoformat() + "Z"
+            "timestamp": timestamp_as_str(d["timestamp"])
         })
         for field in fields:
             ret[-1][field] = d[field]
