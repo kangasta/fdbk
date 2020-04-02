@@ -134,11 +134,14 @@ class DBConnection:
 
         return (results, warnings,)
 
-    def get_summary(self, topic_id):
+    def get_summary(self, topic_id, since=None, until=None, limit=None):
         '''Get summary of the topic data
 
         Args:
             topic_id: ID of the topic to get the summary of
+            since: Datetime of the earliest entry to include
+            until: Datetime of the most recent entry to include
+            limit: Number of entries to include from the most recent
 
         Returns:
             Dictionary with summary of the topic
@@ -146,7 +149,7 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        data_d = self.get_data(topic_id)
+        data_d = self.get_data(topic_id, since, until, limit)
         topic_d = self.get_topic(topic_id)
 
         summary_d = {
@@ -164,10 +167,15 @@ class DBConnection:
 
         return summary_d
 
-    def _run_data_tools_for_many(self, topic_ids=None):
+    def _run_data_tools_for_many(self,
+                                 topic_ids=None,
+                                 type_=None,
+                                 since=None,
+                                 until=None,
+                                 limit=None):
         if not topic_ids:
             # TODO: only fetch topics list once in this function
-            topic_ids = [topic["id"] for topic in self.get_topics()]
+            topic_ids = [topic["id"] for topic in self.get_topics(type_)]
 
         result_d = {
             "topic_names": [],
@@ -178,7 +186,7 @@ class DBConnection:
         }
 
         for topic_id in topic_ids:
-            data_d = self.get_data(topic_id)
+            data_d = self.get_data(topic_id, since, until, limit)
             topic_d = self.get_topic(topic_id)
 
             result_d["topic_names"].append(topic_d["name"])
@@ -193,26 +201,30 @@ class DBConnection:
         result_d["fields"] = list(set(result_d["fields"]))
         return result_d
 
-    def get_comparison(self, topic_ids=None):
+    def get_comparison(self, topic_ids=None, **kwargs):
         '''Get comparison of the data of the given topic IDs
 
-        Args:
-            topic_ids: List of topic IDs to compare
-
-        Returns:
-            Dictionary with comparison of the topics data
-
-        Raises:
-            KeyError: Topic does not exist in DB
+        See get_overview.
         '''
-        return self._run_data_tools_for_many(topic_ids=topic_ids)
+        return self._run_data_tools_for_many(topic_ids, **kwargs)
 
-    def get_overview(self, topic_ids=None):
+    def get_overview(
+            self,
+            topic_ids=None,
+            type_=None,
+            since=None,
+            until=None,
+            limit=None):
         '''Get overview of the data
 
         Args:
-            topic_ids: List of topic IDs to overview. If not given, overview
-            of all topics is generated.
+            topic_ids: List of topic IDs to overview. By default all topics are
+                included.
+            type_: Type of topics to include. Only has effect is topic_ids is
+                empty. By default all topics are included.
+            since: Datetime of the earliest entry to include
+            until: Datetime of the most recent entry to include
+            limit: Number of entries to include from the most recent
 
         Returns:
             Dictionary with overview of the topics data
@@ -220,7 +232,12 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        return self._run_data_tools_for_many(topic_ids=topic_ids)
+        return self._run_data_tools_for_many(
+            topic_ids=topic_ids,
+            type_=type_,
+            since=since,
+            until=until,
+            limit=limit)
 
 
 ConnectionClass = DBConnection

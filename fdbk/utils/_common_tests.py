@@ -53,6 +53,7 @@ class CommonTest:
         topic_id = self.C.add_topic(
             "topic",
             description="description",
+            data_tools=[dict(method="line", field="number")],
             fields=["number"])
 
         for i in range(10):
@@ -82,6 +83,29 @@ class CommonTest:
         data = self.C.get_data(topic_id, limit=5)
         self.assertEqual(data[0].get('timestamp'), '2020-01-01T01:05:00Z')
         self.assertEqual(len(data), 5)
+
+    def test_can_get_summary_since_until_limit(self):
+        topic_id = self._create_data_for_filter_test()
+
+        data = self.C.get_summary(
+            topic_id, since=datetime(
+                2020, 1, 1, 1, 5), until=datetime(
+                2020, 1, 1, 1, 7), limit=2)
+        dataset = data["statistics"][0]["payload"]["data"]["datasets"][0]
+        self.assertEqual(len(dataset["data"]), 2)
+        self.assertEqual(dataset["data"][0]["x"], '2020-01-01T01:06:00Z')
+
+    def test_can_get_overview_since_until_limit(self):
+        topic_id = self._create_data_for_filter_test()
+
+        data = self.C.get_overview(
+            since=datetime(
+                2020, 1, 1, 1, 3), until=datetime(
+                2020, 1, 1, 1, 7), limit=10)
+        dataset = data["statistics"][0]["payload"]["data"]["datasets"][0]
+        self.assertEqual(len(dataset["data"]), 5)
+        self.assertEqual(dataset["data"][0]["x"], '2020-01-01T01:03:00Z')
+        self.assertEqual(dataset["data"][-1]["x"], '2020-01-01T01:07:00Z')
 
     def test_can_get_topics_type(self):
         self.C.add_topic(
