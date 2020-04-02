@@ -60,7 +60,7 @@ def generate_app(config=None, serve_cwd=True, log_level=logging.WARN):
     @app.route('/topics', methods=['GET', 'POST'])
     def topics():
         if request.method == 'GET':
-            return handlers.get_topics()
+            return handlers.get_topics(request.args.get('type'))
         if request.method == 'POST':
             return handlers.add_topic()
 

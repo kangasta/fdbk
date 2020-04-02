@@ -82,3 +82,23 @@ class CommonTest:
         data = self.C.get_data(topic_id, limit=5)
         self.assertEqual(data[0].get('timestamp'), '2020-01-01T01:05:00Z')
         self.assertEqual(len(data), 5)
+
+    def test_can_get_topics_type(self):
+        self.C.add_topic(
+            "1",
+            type_str="a",
+            fields=["number"])
+        self.C.add_topic(
+            "2",
+            type_str="a",
+            fields=["number"])
+        self.C.add_topic(
+            "3",
+            type_str="b",
+            fields=["letter"])
+
+        topics = self.C.get_topics('a')
+        self.assertEqual(len(topics), 2)
+
+        topics = self.C.get_topics('b')
+        self.assertEqual(len(topics), 1)

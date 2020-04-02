@@ -38,8 +38,11 @@ class DBConnection:
         raise NotImplementedError(
             "Functionality not implemented by selected DB connection")
 
-    def get_topics(self):
+    def get_topics(self, type_=None):
         '''Gets list of topic dicts
+
+        Args:
+            type_: Type of topics to fetch. By default all topics are fetched.
 
         Returns:
             List of topic dicts
