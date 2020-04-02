@@ -49,7 +49,7 @@ class CommonTest:
         with self.assertRaises(KeyError):
             self.C.get_data("topic_id")
 
-    def test_can_get_data_since_until_limit(self):
+    def _create_data_for_filter_test(self):
         topic_id = self.C.add_topic(
             "topic",
             description="description",
@@ -59,14 +59,25 @@ class CommonTest:
             with freeze_time(datetime(2020, 1, 1, 1, i)):
                 self.C.add_data(topic_id, {"number": 3})
 
+        return topic_id
+
+    def test_can_get_data_since(self):
+        topic_id = self._create_data_for_filter_test()
+
         data = self.C.get_data(topic_id, since=datetime(2020, 1, 1, 1, 5))
         self.assertEqual(data[0].get('timestamp'), '2020-01-01T01:05:00Z')
         self.assertEqual(len(data), 5)
+
+    def test_can_get_data_until(self):
+        topic_id = self._create_data_for_filter_test()
 
         data = self.C.get_data(topic_id, until=datetime(2020, 1, 1, 1, 5))
         self.assertEqual(data[0].get('timestamp'), '2020-01-01T01:00:00Z')
         self.assertEqual(data[-1].get('timestamp'), '2020-01-01T01:05:00Z')
         self.assertEqual(len(data), 6)
+
+    def test_can_get_data_limit(self):
+        topic_id = self._create_data_for_filter_test()
 
         data = self.C.get_data(topic_id, limit=5)
         self.assertEqual(data[0].get('timestamp'), '2020-01-01T01:05:00Z')

@@ -8,6 +8,7 @@ from fdbk.utils import (
     generate_topic_dict,
     generate_topic_response,
     generate_topics_list)
+from fdbk.utils.messages import *
 
 
 class DictConnection(DBConnection):
@@ -43,8 +44,7 @@ class DictConnection(DBConnection):
             topic_d = next(
                 i for i in self.__dict["topics"] if i["id"] == topic_id)
         except StopIteration:
-            raise KeyError("Topic ID '" + topic_id +
-                           "' not found from database")
+            raise KeyError(topic_not_found(topic_id))
         fields = topic_d["fields"]
 
         data = generate_data_entry(topic_id, fields, values)
@@ -59,8 +59,7 @@ class DictConnection(DBConnection):
             topic = next(
                 i for i in self.__dict["topics"] if i["id"] == topic_id)
         except StopIteration:
-            raise KeyError("Topic ID '" + topic_id +
-                           "' not found from database")
+            raise KeyError(topic_not_found(topic_id))
 
         return generate_topic_response(topic)
 
@@ -69,8 +68,7 @@ class DictConnection(DBConnection):
             topic_d = next(
                 i for i in self.__dict["topics"] if i["id"] == topic_id)
         except StopIteration:
-            raise KeyError("Topic ID '" + topic_id +
-                           "' not found from database")
+            raise KeyError(topic_not_found(topic_id))
         fields = topic_d["fields"]
         data = self.__dict[topic_id]
 
