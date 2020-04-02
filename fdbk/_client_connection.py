@@ -30,9 +30,11 @@ class ClientConnection(DBConnection):
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))
 
-    def get_topics(self):
+    def get_topics(self, type_=None):
         # TODO: Error handling
-        response = requests.get(self.__url + "/topics")
+        query = f"type={type_}" if type_ else ""
+        query = f"?{query}" if query else ""
+        response = requests.get(f"{self.__url}/topics{query}")
 
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))

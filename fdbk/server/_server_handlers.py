@@ -82,10 +82,10 @@ class ServerHandlers:
             "success": "Data successfully added to DB"
         })
 
-    def get_topics(self):
+    def get_topics(self, type_=None):
         if "get_topics" not in self.__config["AllowedActions"]:
             return jsonify(self.__action_not_allowed_json), 403
-        return jsonify(self.__db_connection.get_topics())
+        return jsonify(self.__db_connection.get_topics(type_))
 
     def get_topic(self, topic_id):
         if "get_topic" not in self.__config["AllowedActions"]:

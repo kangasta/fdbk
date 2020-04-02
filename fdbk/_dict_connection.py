@@ -50,8 +50,11 @@ class DictConnection(DBConnection):
         data = generate_data_entry(topic_id, fields, values)
         self.__dict[topic_id].append(data)
 
-    def get_topics(self):
+    def get_topics(self, type_=None):
         topics = self.__dict["topics"]
+        if type_:
+            topics = [i for i in topics if i.get('type') == type_]
+
         return generate_topics_list(topics)
 
     def get_topic(self, topic_id):
