@@ -7,7 +7,7 @@ def get_reporter_argparser(parser=None):
 
     parser.add_argument(
         "db_parameters",
-        nargs="+",
+        nargs="*",
         type=str,
         help="Parameters for fdbk DB connection.")
     parser.add_argument(
