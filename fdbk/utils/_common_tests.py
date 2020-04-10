@@ -2,7 +2,10 @@
 
 from datetime import datetime
 
-from freezegun import freeze_time
+try:
+    from freezegun import freeze_time
+except ImportError:
+    pass
 
 
 class CommonTest:
