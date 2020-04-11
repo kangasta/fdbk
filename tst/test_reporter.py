@@ -186,7 +186,7 @@ class ReporterTest(TestCase):
         DS = TestDataSource([], 0)
         R = Reporter(DS, 'DictConnection', verbose=False, num_samples=2)
 
-        for i in range(2):
+        for i in range(5):
             R.report(dict(a=1))
             self.assertEqual(i, len(add_mock.mock_calls))
 
@@ -194,21 +194,20 @@ class ReporterTest(TestCase):
             self.assertEqual(i+1, len(add_mock.mock_calls))
 
     @patch.object(DictConnection, 'add_data')
-    def test_push_automatically_on_report_for_num_samples(self, add_mock):
+    def test_push_automatically_on_report_for_interval(self, add_mock):
         DS = TestDataSource([], 0)
-        R = Reporter(DS, 'DictConnection', verbose=False, interval=180)
+        R = Reporter(DS, 'DictConnection', verbose=False, interval=120)
 
-        with freeze_time(datetime(2020,1,1,1,30)):
-            R.report(dict(a=1))
-            add_mock.assert_not_called()
-
-        with freeze_time(datetime(2020,1,1,1,31)):
-            R.report(dict(a=1))
-            add_mock.assert_not_called()
-
-        with freeze_time(datetime(2020,1,1,1,33)):
-            R.report(dict(a=1))
-            add_mock.assert_called()
+        for i in range(1,10):
+            with freeze_time(datetime(2020,1,1,1,i)):
+                R.report(dict(a=i))
+                if not i % 3:
+                    add_mock.assert_called()
+                    self.assertIsNone(R._data)
+                    add_mock.reset_mock()
+                else:
+                    add_mock.assert_not_called()
+                    self.assertIsNotNone(R._data)
 
     def test_topic_creation_fails_without_data_source(self):
         with self.assertRaises(ValueError):
