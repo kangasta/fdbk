@@ -19,13 +19,11 @@ def get_reporter_argparser(parser=None):
         "--interval",
         "-i",
         type=float,
-        default=360.0,
         help="Data pushing interval in seconds.")
     parser.add_argument(
         "--num-samples",
         "-n",
         type=int,
-        default=60,
         help="Number of samples to average during the push interval")
     parser.add_argument(
         "--verbose",
