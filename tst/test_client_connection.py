@@ -22,7 +22,7 @@ class MockResponse(object):
 
 class ClientConnectionTest(TestCase):
     def setUp(self):
-        self.__server = generate_app().test_client()
+        self.__server = generate_app("DictConnection", []).test_client()
 
     def mock_requests_get(self, *args, **kwargs):
         response = self.__server.get(*args, **kwargs)

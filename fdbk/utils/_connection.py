@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from importlib import import_module
 
 BUILT_IN = dict(
@@ -18,3 +19,21 @@ def create_db_connection(db_plugin, db_parameters):
     except Exception as e:
         raise RuntimeError(
             "Loading or creating fdbk DB connection failed: " + str(e))
+
+
+def get_connection_argparser(parser=None):
+    if not parser:
+        parser = ArgumentParser()
+
+    parser.add_argument(
+        "db_parameters",
+        nargs="*",
+        type=str,
+        help="Parameters for fdbk DB connection.")
+    parser.add_argument(
+        "--db-connection",
+        type=str,
+        default="ClientConnection",
+        help="fdbk DB connection to use (default=ClientConnection)")
+
+    return parser
