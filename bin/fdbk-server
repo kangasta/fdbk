@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 
-import argparse
-import json
 import logging
 import sys
 
+try:
+    from flask_cors import CORS
+    cors_supported = True
+except ImportError:
+    cors_supported = False
+
 from fdbk.server import generate_app
+from fdbk.utils import get_connection_argparser
 from fdbk import __version__
 
 def _generate_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c","--config-file",
-        help="configuration file path",
-        default="",
-        type=str)
+    parser = get_connection_argparser()
+    parser.add_argument("--cors",
+        help="allow cors requests",
+        action="store_true")
     parser.add_argument("--host",
         help="hosts to serve to (default = 0.0.0.0)",
         default="0.0.0.0",
@@ -22,26 +26,24 @@ def _generate_parser():
         help="port to serve from (default = 8080)",
         default=8080,
         type=int)
-    parser.add_argument("--no-front",
-        help="Disable serving CWD",
-        action="store_true")
     parser.add_argument("-v", "--version",
         help="Print package version",
         action="store_true")
     return parser
 
-_args = _generate_parser().parse_args()
+args = _generate_parser().parse_args()
 
-if _args.version:
+if args.version:
     print(f"fdbk {__version__}")
     sys.exit()
 
-_serve_cwd = not _args.no_front
-if not _args.config_file:
-    _config = None
-else:
-    with open(_args.config_file, "r") as f:
-        _config = json.load(f)
-    _config["ServeCWD"] = _serve_cwd
+if args.cors and not cors_supported:
+    print("To enable CORS, install flask_cors.")
+    sys.exit()
 
-generate_app(config=_config, serve_cwd=_serve_cwd, log_level=logging.INFO).run(use_reloader=True, host=_args.host, port=_args.port, threaded=True)
+app = generate_app(args.db_connection, args.db_parameters, log_level=logging.INFO)
+
+if args.cors and cors_supported:
+        CORS(app)
+
+app.run(use_reloader=True, host=args.host, port=args.port, threaded=True)

@@ -1,20 +1,13 @@
 from argparse import ArgumentParser
 
+from ._connection import get_connection_argparser
+
 
 def get_reporter_argparser(parser=None):
     if not parser:
         parser = ArgumentParser()
 
-    parser.add_argument(
-        "db_parameters",
-        nargs="*",
-        type=str,
-        help="Parameters for fdbk DB connection.")
-    parser.add_argument(
-        "--db-connection",
-        type=str,
-        default="ClientConnection",
-        help="fdbk DB connection to use (default=ClientConnection)")
+    get_connection_argparser(parser)
     parser.add_argument(
         "--interval",
         "-i",
