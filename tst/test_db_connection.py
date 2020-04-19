@@ -136,8 +136,8 @@ class DBConnectionTest(TestCase):
         C.add_data(topic_id, {"number": 3})
         summary = C.get_summary(topic_id)
         self.assertEqual(summary["warnings"], [
-            "The requested method 'cow' is not supported.",
-            "The requested method 'moose' is not supported."
+            'The requested method "cow" is not supported.',
+            'The requested method "moose" is not supported.'
         ])
 
     def test_get_latest_handles_empty_list(self):
@@ -173,7 +173,7 @@ class DBConnectionTest(TestCase):
         self.assertEqual(summary["statistics"][0]["payload"]["value"], data[3]["timestamp"])
         self.assertEqual(summary["statistics"][1]["payload"]["value"], data[2]["timestamp"])
 
-    def _test_run_data_tools_for_many(self, fn, data_tools, statistics_len):
+    def _test_run_data_tools_for_many(self, fn, data_tools):
         topic_ids = []
         C = DictConnection()
         for i in range(3):
@@ -194,15 +194,21 @@ class DBConnectionTest(TestCase):
         self.assertEqual(result["topic_names"], ["topic_0", "topic_1", "topic_2"])
         self.assertEqual(result["fields"], ["number"])
 
-        self.assertEqual(len(result["statistics"]), statistics_len)
+        return result
 
     def test_get_comparison_produces_comparison(self):
-        data_tools = [{"field":"number", "method":"doughnut"}]
-        return self._test_run_data_tools_for_many('get_comparison', data_tools, 1)
+        data_tools = [{"field":"number", "method":"doughnut", "metadata": dict(asd=123)}]
+        result = self._test_run_data_tools_for_many('get_comparison', data_tools)
+
+        self.assertEqual(len(result["statistics"]), 1)
+        self.assertEqual(result["statistics"][0]["metadata"]["asd"], 123)
 
     def test_get_overview_produces_overview(self):
         data_tools = [{"field":"number", "method":"latest"}]
-        return self._test_run_data_tools_for_many('get_overview', data_tools, 3)
+        result = self._test_run_data_tools_for_many('get_overview', data_tools)
+
+        self.assertEqual(len(result["statistics"]), 3)
+
 
     def test_overview_and_comparison_include_units(self):
         data_tools = [
