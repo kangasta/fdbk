@@ -1,4 +1,4 @@
-from fdbk.data_tools import functions as data_functions, post_process
+from fdbk.data_tools import post_process, run_data_tools
 
 
 class DBConnection:
@@ -103,37 +103,6 @@ class DBConnection:
         '''
         return self.get_data(topic_id)[-1]
 
-    def _run_data_tools(self, topic_d, data):
-        results = []
-        warnings = []
-
-        for instruction in topic_d['data_tools']:
-            if instruction["method"] not in data_functions:
-                warnings.append("The requested method '" +
-                                instruction["method"] + "' is not supported.")
-                continue
-            if instruction["field"] not in topic_d["fields"]:
-                warnings.append("The requested field '" +
-                                instruction["field"] + "' is undefined.")
-                continue
-
-            result = data_functions[instruction["method"]](
-                data, instruction["field"]
-            )
-            if result is not None:
-                result["payload"]["topic_name"] = topic_d["name"]
-                try:
-                    result["payload"]["unit"] = next(
-                        i["unit"] for i in topic_d["units"] if (
-                            i["field"] == instruction["field"])
-                    )
-                except StopIteration:
-                    pass
-
-            results.append(result)
-
-        return (results, warnings,)
-
     def get_summary(self, topic_id, since=None, until=None, limit=None):
         '''Get summary of the topic data
 
@@ -161,7 +130,7 @@ class DBConnection:
             "warnings": []
         }
 
-        results, warnings = self._run_data_tools(topic_d, data_d)
+        results, warnings = run_data_tools(topic_d, data_d)
         summary_d["statistics"] = post_process(results)
         summary_d["warnings"].extend(warnings)
 
@@ -192,7 +161,7 @@ class DBConnection:
             result_d["topic_names"].append(topic_d["name"])
             result_d["fields"].extend(topic_d["fields"])
 
-            results, warnings = self._run_data_tools(topic_d, data_d)
+            results, warnings = run_data_tools(topic_d, data_d)
             result_d["statistics"].extend(results)
             result_d["warnings"].extend(warnings)
 

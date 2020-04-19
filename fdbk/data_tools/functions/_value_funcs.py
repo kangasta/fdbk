@@ -1,6 +1,6 @@
 from numbers import Number
 
-from ._utils import _value_dict
+from .utils import value_dict
 
 
 def average(data, field):
@@ -9,7 +9,7 @@ def average(data, field):
     if not filtered_data:
         return None
 
-    return _value_dict(
+    return value_dict(
         type="average",
         field=field,
         value=sum(i / float(len(filtered_data)) for i in filtered_data)
@@ -20,7 +20,7 @@ def latest(data, field):
     if not data:
         return None
 
-    return _value_dict(
+    return value_dict(
         type="latest",
         field=field,
         value=data[-1][field] if data else None
@@ -36,7 +36,7 @@ def last(truthy_or_falsy, data, field):
     type_str = "last_truthy" if truthy_or_falsy else "last_falsy"
     value = filtered_data[-1]["timestamp"]
 
-    return _value_dict(
+    return value_dict(
         type=type_str,
         field=field,
         value=value
