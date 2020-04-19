@@ -131,7 +131,10 @@ class DBConnection:
         }
 
         results, warnings = run_data_tools(topic_d, data_d)
-        summary_d["statistics"] = post_process(results)
+        summary_d["warnings"].extend(warnings)
+
+        results, warnings = post_process(results)
+        summary_d["statistics"] = results
         summary_d["warnings"].extend(warnings)
 
         return summary_d
@@ -154,6 +157,7 @@ class DBConnection:
             "warnings": []
         }
 
+        results = []
         for topic_id in topic_ids:
             data_d = self.get_data(topic_id, since, until, limit)
             topic_d = self.get_topic(topic_id)
@@ -161,12 +165,14 @@ class DBConnection:
             result_d["topic_names"].append(topic_d["name"])
             result_d["fields"].extend(topic_d["fields"])
 
-            results, warnings = run_data_tools(topic_d, data_d)
-            result_d["statistics"].extend(results)
+            new_results, warnings = run_data_tools(topic_d, data_d)
+            results.extend(new_results)
             result_d["warnings"].extend(warnings)
 
-        result_d["statistics"] = post_process(
-            result_d["statistics"])
+        results, warnings = post_process(results)
+        result_d["statistics"] = results
+        result_d["warnings"].extend(warnings)
+
         result_d["fields"] = list(set(result_d["fields"]))
         return result_d
 
