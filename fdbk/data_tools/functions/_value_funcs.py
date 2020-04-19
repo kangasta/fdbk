@@ -3,7 +3,7 @@ from numbers import Number
 from .utils import value_dict
 
 
-def average(data, field):
+def average(data, field, parameters=None):
     filtered_data = [d[field]
                      for d in data if isinstance(d[field], Number)]
     if not filtered_data:
@@ -16,7 +16,7 @@ def average(data, field):
     )
 
 
-def latest(data, field):
+def latest(data, field, parameters=None):
     if not data:
         return None
 
@@ -27,7 +27,7 @@ def latest(data, field):
     )
 
 
-def last(truthy_or_falsy, data, field):
+def last(truthy_or_falsy, data, field, parameters=None):
     truthy_or_falsy = bool(truthy_or_falsy)
     filtered_data = [d for d in data if bool(d[field]) == truthy_or_falsy]
     if not filtered_data:
@@ -43,11 +43,11 @@ def last(truthy_or_falsy, data, field):
     )
 
 
-def last_truthy(data, field):
+def last_truthy(data, field, parameters=None):
     return last(True, data, field)
 
 
-def last_falsy(data, field):
+def last_falsy(data, field, parameters=None):
     return last(False, data, field)
 
 

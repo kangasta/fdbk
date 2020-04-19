@@ -14,7 +14,8 @@
       "properties": {
         "field": { "type": "string"},
         "method": { "type": "string"},
-        "metadata": {"type": "object"}
+        "metadata": {"type": "object"},
+        "parameters": {"type": "object"}
       },
       "required": ["field", "method"]
     }

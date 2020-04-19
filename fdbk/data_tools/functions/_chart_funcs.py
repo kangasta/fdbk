@@ -1,7 +1,7 @@
 from .utils import chart_dict
 
 
-def doughnut(data, field, type_="doughnut"):
+def doughnut(data, field, parameteres=None, type_="doughnut"):
     field_data = [a[field] for a in data]
 
     if not field_data:
@@ -15,7 +15,7 @@ def doughnut(data, field, type_="doughnut"):
     )
 
 
-def line(data, field):
+def line(data, field, parameteres=None):
     if not data:
         return None
 
@@ -26,8 +26,8 @@ def line(data, field):
     )
 
 
-def pie(data, field):
-    return doughnut(data, field, "pie")
+def pie(data, field, parameteres=None):
+    return doughnut(data, field, parameteres, "pie")
 
 
 CHART_FUNCS = dict(
