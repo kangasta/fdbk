@@ -1,3 +1,6 @@
+'''Validation tools for input and output data
+'''
+
 import json
 from jsonschema import validate
 
@@ -7,7 +10,7 @@ except ImportError:  # pragma: no cover
     import importlib_resources as resources
 
 
-def validate_dict(input_dict, schema_name):
+def _validate_dict(input_dict, schema_name):
     schema = json.loads(
         resources.read_text(
             'fdbk.schemas',
@@ -16,8 +19,12 @@ def validate_dict(input_dict, schema_name):
 
 
 def validate_topic_dict(topic_d):
-    validate_dict(topic_d, 'topic-in')
+    '''Validate topic when creating or modifying topics
+    '''
+    _validate_dict(topic_d, 'topic-in')
 
 
 def validate_statistics_array(statistics):
-    validate_dict(statistics, 'statistics-out')
+    '''Validate output statistics array
+    '''
+    _validate_dict(statistics, 'statistics-out')

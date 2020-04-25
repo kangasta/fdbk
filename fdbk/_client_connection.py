@@ -1,3 +1,6 @@
+'''DB connection to use with provided development server
+'''
+
 import json
 import requests
 
@@ -6,6 +9,9 @@ from fdbk.utils import generate_topic_dict
 
 
 class ClientConnection(DBConnection):
+    '''DB connection to use with provided development server
+    '''
+
     def __init__(self, url, token=None):
         self.__url = url
         self.__token = token

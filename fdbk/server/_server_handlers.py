@@ -1,3 +1,7 @@
+'''Development server handlers, interfaces not stable
+'''
+
+
 class ServerHandlers:
     def __init__(self, db_connection):
         self._db_connection = db_connection
