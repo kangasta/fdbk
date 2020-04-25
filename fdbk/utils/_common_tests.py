@@ -4,7 +4,7 @@ from datetime import datetime
 
 try:
     from freezegun import freeze_time
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 
