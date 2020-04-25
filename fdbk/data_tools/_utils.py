@@ -1,5 +1,5 @@
 from fdbk.utils.messages import (
-    method_not_supported, field_is_undefined, list_name_is_undefined)
+    method_not_supported, field_is_undefined, collection_name_is_undefined)
 
 from .functions import functions as data_functions
 from .functions.utils import chart_dict, statistics_dict
@@ -11,10 +11,6 @@ def _create_chart(type_, field):
         type=type_,
         data=dict(datasets=[], labels=[]),
     )
-
-
-def _create_collection(name):
-    return dict(name=name, data=[])
 
 
 def _visualization_to_dataset(visualization):
@@ -56,8 +52,68 @@ def process_charts(statistics):
     return (result, [],)
 
 
-def process_lists(statistics):
-    lists = {}
+def _create_collection(name, **kwargs):
+    return dict(name=name, **kwargs, data=[])
+
+
+def _get_collection_target(type_):
+    if type_ in ("list", "list_item"):
+        return "list"
+    elif type_ in ("table_item"):
+        return "table_row"
+    elif type_ in ("table_row"):
+        return "table"
+    else:
+        return None
+
+
+def _get_collection_name(statistic):
+    type_ = statistic.get("type")
+
+    if type_ == "list_item":
+        return statistic.get("parameters", {}).get('name')
+    elif type_ == "list":
+        return statistic.get("payload").get("name")
+    elif type_ == "table_item":
+        return statistic.get("payload", {}).get('topic_name')
+    elif type_ == "table_row":
+        return statistic.get("payload").get("table_name")
+
+
+def _get_collection_kwargs(statistic):
+    type_ = statistic.get("type")
+
+    if type_ == "table_item":
+        return dict(table_name=statistic.get("parameters", {}).get('name'))
+    else:
+        return {}
+
+
+def _get_clean_payload(statistic):
+    type_ = statistic.get("type")
+    payload = statistic.get("payload", {})
+
+    if type_ == "table_row":
+        payload.pop("table_name")
+    if type_ in ("list_item", "table_item",):
+        topic_name = payload.pop("topic_name")
+        payload["payload"]["topic_name"] = topic_name
+
+    return payload
+
+
+def _parse_collections_dict(collections_d):
+    result = []
+
+    for type_ in collections_d:
+        data = collections_d.get(type_).values()
+        result.extend(statistics_dict(type_, **i) for i in data)
+
+    return result
+
+
+def process_collections(statistics):
+    collections = dict(list={}, table_row={}, table={})
     other = []
     warnings = []
 
@@ -65,36 +121,36 @@ def process_lists(statistics):
         if not i:
             continue
         type_ = i.get("type")
-        if type_ not in ("list", "list_item"):
+        target = _get_collection_target(type_)
+        if not target:
             other.append(i)
             continue
 
-        if type_ == "list_item":
-            list_name = i.get("parameters", {}).get('name')
-        else:
-            list_name = i.get("payload").get("name")
+        name = _get_collection_name(i)
 
-        payload = i.get("payload", {})
-        if not list_name:  # type_ == "list_item"
+        payload = _get_clean_payload(i)
+        if not name:  # type_ == "list_item"
             warnings.append(
-                list_name_is_undefined(
+                collection_name_is_undefined(
                     payload.get("method"),
                     payload.get("field")))
             continue
 
-        if list_name not in lists:
-            lists[list_name] = _create_collection(list_name)
+        target_d = collections[target]
+        if name not in target_d:
+            kwargs = _get_collection_kwargs(i)
+            target_d[name] = _create_collection(name, **kwargs)
 
-        if type_ == "list_item":
-            lists[list_name]["data"].append(payload)
-        else:
-            lists[list_name]["data"].extend(payload.get("data", []))
+        if type_ in ("list_item", "table_item", "table_row", ):
+            target_d[name]["data"].append(payload)
+        elif type_ == "list":
+            target_d[name]["data"].extend(payload.get("data", []))
 
-        lists[list_name]["metadata"] = {
-            **lists[list_name].get("metadata", {}),
+        target_d[name]["metadata"] = {
+            **target_d[name].get("metadata", {}),
             **i.get("metadata")}
 
-    result = list(statistics_dict("list", **i) for i in lists.values()) + other
+    result = _parse_collections_dict(collections) + other
     return (result, warnings,)
 
 
@@ -111,7 +167,7 @@ def _process(funcs, statistics):
 
 def pre_process(statistics):
     funcs = (
-        process_lists,
+        process_collections,
     )
     return _process(funcs, statistics)
 
@@ -119,7 +175,7 @@ def pre_process(statistics):
 def post_process(statistics):
     funcs = (
         process_charts,
-        process_lists,
+        process_collections,
     )
     return _process(funcs, statistics)
 

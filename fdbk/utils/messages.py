@@ -10,5 +10,5 @@ def field_is_undefined(field):
     return f'The requested field "{field}" is undefined.'
 
 
-def list_name_is_undefined(method, field):
+def collection_name_is_undefined(method, field):
     return f'No target list name specified for {method} {field}.'

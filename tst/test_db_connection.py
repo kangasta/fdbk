@@ -221,6 +221,18 @@ class DBConnectionTest(TestCase):
         self.assertEqual(len(list_data), 3)
         self.assertEqual(list_meta, {"qwe": 456})
 
+    def test_get_overview_combines_table_items_to_table(self):
+        data_tools = [{"field":"number", "method": "table_item", "parameters": {"name": "asd"}, "metadata": dict(qwe=456)}]
+        result = self._test_run_data_tools_for_many('get_overview', data_tools)
+        statistics = result["statistics"]
+
+        self.assertEqual(len(statistics), 1)
+
+        table_data = statistics[0].get("payload").get("data")
+        table_meta = statistics[0].get("metadata")
+        self.assertEqual(len(table_data), 3)
+        self.assertEqual(table_meta, {"qwe": 456})
+
     def test_process_list_ignores_instruction_without_parameters(self):
         data_tools = [{"field":"number", "method": "list_item"}]
         result = self._test_run_data_tools_for_many('get_overview', data_tools)
