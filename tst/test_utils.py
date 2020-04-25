@@ -1,7 +1,11 @@
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from fdbk.utils import get_connection_argparser, get_reporter_argparser, process_db_parameters
+from fdbk.utils import (
+    create_db_connection,
+    get_connection_argparser,
+    get_reporter_argparser,
+    process_db_parameters)
 
 class UtilsTest(TestCase):
     def test_interval_and_num_samples_default_to_none(self):
@@ -35,3 +39,8 @@ class UtilsTest(TestCase):
         self.assertEqual(args[0], "asd")
         self.assertEqual(kwargs["qwe"], "asd")
         self.assertEqual(kwargs["zxc"], "qwe=asd")
+
+    def test_create_db_connection(self):
+        backup = "/home/user/.fdbk-topics.json"
+        c = create_db_connection("dict", [f"topics_db_backup={backup}"])
+        self.assertEqual(c._topics_backup, backup)
