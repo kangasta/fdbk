@@ -5,8 +5,8 @@ from unittest.mock import Mock, patch
 
 from jsonschema.exceptions import ValidationError
 
-from fdbk import DictConnection
-from fdbk import DBConnection
+from fdbk import DBConnection, DictConnection
+from fdbk.validate import validate_statistics_array
 
 class DBConnectionTest(TestCase):
     def test_abstract_methods_raise_not_implemented_error(self):
@@ -199,21 +199,26 @@ class DBConnectionTest(TestCase):
     def test_get_comparison_produces_comparison(self):
         data_tools = [{"field":"number", "method":"doughnut", "metadata": dict(asd=123)}]
         result = self._test_run_data_tools_for_many('get_comparison', data_tools)
+        statistics = result["statistics"]
 
-        self.assertEqual(len(result["statistics"]), 1)
-        self.assertEqual(result["statistics"][0]["metadata"]["asd"], 123)
+        validate_statistics_array(statistics)
+        self.assertEqual(len(statistics), 1)
+        self.assertEqual(statistics[0]["metadata"]["asd"], 123)
 
     def test_get_overview_produces_overview(self):
         data_tools = [{"field":"number", "method":"latest"}]
         result = self._test_run_data_tools_for_many('get_overview', data_tools)
+        statistics = result["statistics"]
 
-        self.assertEqual(len(result["statistics"]), 3)
+        validate_statistics_array(statistics)
+        self.assertEqual(len(statistics), 3)
 
     def test_get_overview_combines_list_items_to_list(self):
         data_tools = [{"field":"number", "method": "list_item", "parameters": {"name": "asd"}, "metadata": dict(qwe=456)}]
         result = self._test_run_data_tools_for_many('get_overview', data_tools)
         statistics = result["statistics"]
 
+        validate_statistics_array(statistics)
         self.assertEqual(len(statistics), 1)
 
         list_data = statistics[0].get("payload").get("data")
@@ -226,6 +231,7 @@ class DBConnectionTest(TestCase):
         result = self._test_run_data_tools_for_many('get_overview', data_tools)
         statistics = result["statistics"]
 
+        validate_statistics_array(statistics)
         self.assertEqual(len(statistics), 1)
 
         table_data = statistics[0].get("payload").get("data")

@@ -17,3 +17,7 @@ def validate_dict(input_dict, schema_name):
 
 def validate_topic_dict(topic_d):
     validate_dict(topic_d, 'topic-in')
+
+
+def validate_statistics_array(statistics):
+    validate_dict(statistics, 'statistics-out')
