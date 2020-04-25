@@ -1,3 +1,6 @@
+'''Reporter for pushing data from a data source to fdbk
+'''
+
 import json
 from datetime import datetime
 from functools import reduce
@@ -40,6 +43,9 @@ def _obj_add(a, b):
 
 
 class _Data:
+    '''Class for storing and averaging Reporter data
+    '''
+
     def __init__(self):
         self._start = datetime.now()
         self._data = []
@@ -49,6 +55,11 @@ class _Data:
 
     @property
     def averaged(self):
+        '''Get averaged data or None if no data available
+
+        Returns:
+            Object with its values averaged or None if no data available
+        '''
         if not self._data:
             return None
 
@@ -59,19 +70,53 @@ class _Data:
 
     @property
     def age(self):
+        '''Get age of the current instance
+
+        Returns:
+            Age of the current instance in seconds
+        '''
         return (datetime.now() - self._start).total_seconds()
 
     def add(self, data):
+        '''Add data after validating that it matches previous entries
+
+        Args:
+            data: Data object to add
+
+        Raises:
+            ValueError: Keys of the new object do not match earlier objects
+        '''
         if self._data and self._data[0].keys() != data.keys():
             raise ValueError('Object keys do not match')
 
         self._data.append(data)
 
     def reset(self):
+        '''Clear all data and reset start time
+        '''
         self.__init__()
 
 
 class Reporter:
+    '''Class for handling adding new data to fdbk
+
+    Args:
+        data_source: Data source to get topic details and new data.
+            Is only used with start method.
+            Must be set if topic_id not provided.
+        db_connection: DB connection to use.
+        db_parameters: Parameters for db_connection.
+            See connection documentation for details.
+        topic_id: ID of topic to push data to.
+            Must be set if data_source not provided.
+        verbose: Set to falsy to disable usage of print_fn
+        interval: Time to average before pushing to DB.
+            This parameter only has effect when using push method.
+        num_samples: Number of samples to average before pushing to DB.
+            This parameter only has effect when using push method.
+        print_fn: Function to use printing, print by default
+    '''
+
     def __init__(
             self,
             data_source=None,
@@ -120,19 +165,39 @@ class Reporter:
 
     @property
     def connection(self):
+        '''Get current DB connection instance
+
+        Returns:
+            DB connection instance
+        '''
         return self._client
 
     @property
     def data(self):
+        '''Get current data
+
+        Returns:
+            Current _Data instance
+        '''
         if self._data is None:
             self._data = _Data()
         return self._data
 
     @property
     def topic_id(self):
+        '''Get target topic ID
+
+        Returns:
+            Target topic ID
+        '''
         return self._topic_id
 
     def push(self, data=None):
+        '''Push data to fdbk and reset averaging
+
+        Args:
+            data: Data to push, or falsy value to use internal data
+        '''
         _data = data if data else self.data.averaged
 
         if not _data:
@@ -151,6 +216,16 @@ class Reporter:
                 self._data = None
 
     def report(self, data, auto_push=True):
+        '''Report data to instances internal storage
+
+        Args:
+            data: Data to report
+            auto_push: Set to falsy value to disable automatic push when
+                interval or num_samples trigger of the instance is reached.
+
+        Raises:
+            ValueError: Keys of the new object do not match earlier objects
+        '''
         self.data.add(data)
 
         if not auto_push:
@@ -173,6 +248,16 @@ class Reporter:
                 sleep(float(interval) / num_samples)
 
     def start(self, interval=360, num_samples=60):
+        '''Start pushing data polled from data_source to fdbk
+
+        Args:
+            interval: Time to average before pushing to DB.
+            num_samples: Number of samples to collect for averaging during the
+                interval.
+
+        Raises:
+            ValueError: DataSource is not defined.
+        '''
         if not self._data_source:
             raise ValueError('Cannot collect data without data source')
 

@@ -1,3 +1,6 @@
+'''Example DB connection implemented with Python dict as the storage
+'''
+
 from os.path import expanduser
 import json
 
@@ -12,6 +15,9 @@ from fdbk.utils.messages import *
 
 
 class DictConnection(DBConnection):
+    '''Example DB connection implemented with Python dict as the storage
+    '''
+
     def __init__(self, topics_db_backup=None):
         self.__topics_backup = topics_db_backup
         topics = []

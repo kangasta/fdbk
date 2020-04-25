@@ -1,3 +1,6 @@
+'''Base class for DB connections.
+'''
+
 from fdbk.data_tools import post_process, run_data_tools
 
 
