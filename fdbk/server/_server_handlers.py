@@ -1,6 +1,23 @@
 '''Development server handlers, interfaces not stable
 '''
 
+from dateutil.parser import isoparse
+
+
+def _parse_param(param, parser):
+    try:
+        return parser(param)
+    except Exception:
+        return None
+
+
+def parse_filter_parameters(args):
+    return dict(
+        since=_parse_param(args.get('since'), isoparse),
+        until=_parse_param(args.get('until'), isoparse),
+        limit=_parse_param(args.get('limit'), int),
+    )
+
 
 class ServerHandlers:
     def __init__(self, db_connection):
@@ -12,17 +29,12 @@ class ServerHandlers:
         if not topic:
             return {
                 "error": "No 'topic' field in input data"
-            }, 404
+            }, 400
 
         try:
             topic_id = self._db_connection.add_topic(
                 topic, type_str=type_str, **json_in)
-        except KeyError as error:
-            # Field not available in input data
-            return {
-                "error": str(error)
-            }, 404
-        except TypeError as error:
+        except Exception as error:
             return {
                 "error": str(error)
             }, 400
@@ -60,10 +72,10 @@ class ServerHandlers:
                 "error": str(error)
             }, 404
 
-    def get_data(self, topic_id, since=None, until=None, limit=None):
+    def get_data(self, topic_id, query_args):
         try:
             data = self._db_connection.get_data(
-                topic_id, since=since, until=until, limit=limit)
+                topic_id, **parse_filter_parameters(query_args))
             return data, 200
         except KeyError as error:
             return {
@@ -79,37 +91,37 @@ class ServerHandlers:
                 "error": str(error)
             }, 404
 
-    def get_summary(self, topic_id, since=None, until=None, limit=None):
+    def get_summary(self, topic_id, query_args):
         try:
             data = self._db_connection.get_summary(
-                topic_id, since=since, until=until, limit=limit)
+                topic_id, **parse_filter_parameters(query_args))
             return data, 200
         except KeyError as error:
             return {
                 "error": str(error)
             }, 404
 
-    def get_comparison(
-            self,
-            topic_ids=None,
-            since=None,
-            until=None,
-            limit=None):
+    def get_comparison(self, topic_ids=None, query_args=None):
         topic_ids_a = topic_ids.split(',') if topic_ids else None
+        if not query_args:
+            query_args = {}
 
         try:
             data = self._db_connection.get_comparison(
-                topic_ids_a, since=since, until=until, limit=limit)
+                topic_ids_a, **parse_filter_parameters(query_args))
             return data, 200
         except KeyError as error:
             return {
                 "error": str(error)
             }, 404
 
-    def get_overview(self, type_=None, since=None, until=None, limit=None):
+    def get_overview(self, type_=None, query_args=None):
+        if not query_args:
+            query_args = {}
+
         try:
             data = self._db_connection.get_overview(
-                type_=type_, since=since, until=until, limit=limit)
+                type_=type_, **parse_filter_parameters(query_args))
             return data, 200
         except KeyError as error:
             return {
