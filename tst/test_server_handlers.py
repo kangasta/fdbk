@@ -43,3 +43,49 @@ class ServerHandlersTest(TestCase):
 
         _, status = s.add_topic(dict(name="topic"))
         self.assertEqual(status, 200)
+
+    def test_add_data_and_get_latest(self):
+        s = ServerHandlers(DictConnection())
+
+        _, status = s.get_latest(None)
+        self.assertEqual(status, 404)
+
+        response, status = s.add_topic(dict(name="topic", fields=["number"]))
+        self.assertEqual(status, 200)
+        topic_id = response.get("topic_id")
+
+        _, status = s.get_latest(topic_id)
+        self.assertEqual(status, 404)
+
+        _, status = s.add_data(topic_id, dict(number=3))
+        self.assertEqual(status, 200)
+
+        response, status = s.get_latest(topic_id)
+        self.assertEqual(status, 200)
+        self.assertEqual(response.get("number"), 3)
+
+    def test_add_data_validations(self):
+        s = ServerHandlers(DictConnection())
+
+        _, status = s.add_data(None, dict(number=3))
+        self.assertEqual(status, 404)
+
+        response, status = s.add_topic(dict(name="topic", fields=["number"]))
+        self.assertEqual(status, 200)
+        topic_id = response.get("topic_id")
+
+        _, status = s.add_data(topic_id, dict(letter="a"))
+        self.assertEqual(status, 400)
+
+    def test_get_topic(self):
+        s = ServerHandlers(DictConnection())
+
+        _, status = s.get_topic(None)
+        self.assertEqual(status, 404)
+
+        response, status = s.add_topic(dict(name="topic", fields=["number"]))
+        self.assertEqual(status, 200)
+        topic_id = response.get("topic_id")
+
+        _, status = s.get_topic(topic_id)
+        self.assertEqual(status, 200)
