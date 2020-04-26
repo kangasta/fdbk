@@ -62,7 +62,8 @@ class ServerHandlers:
 
     def get_data(self, topic_id, since=None, until=None, limit=None):
         try:
-            data = self._db_connection.get_data(topic_id, since, until, limit)
+            data = self._db_connection.get_data(
+                topic_id, since=since, until=until, limit=limit)
             return data, 200
         except KeyError as error:
             return {
@@ -78,29 +79,37 @@ class ServerHandlers:
                 "error": str(error)
             }, 404
 
-    def get_summary(self, topic_id):
+    def get_summary(self, topic_id, since=None, until=None, limit=None):
         try:
-            data = self._db_connection.get_summary(topic_id)
+            data = self._db_connection.get_summary(
+                topic_id, since=since, until=until, limit=limit)
             return data, 200
         except KeyError as error:
             return {
                 "error": str(error)
             }, 404
 
-    def get_comparison(self, topic_ids=None):
+    def get_comparison(
+            self,
+            topic_ids=None,
+            since=None,
+            until=None,
+            limit=None):
         topic_ids_a = topic_ids.split(',') if topic_ids else None
 
         try:
-            data = self._db_connection.get_comparison(topic_ids_a)
+            data = self._db_connection.get_comparison(
+                topic_ids_a, since=since, until=until, limit=limit)
             return data, 200
         except KeyError as error:
             return {
                 "error": str(error)
             }, 404
 
-    def get_overview(self):
+    def get_overview(self, type_=None, since=None, until=None, limit=None):
         try:
-            data = self._db_connection.get_overview()
+            data = self._db_connection.get_overview(
+                type_=type_, since=since, until=until, limit=limit)
             return data, 200
         except KeyError as error:
             return {
