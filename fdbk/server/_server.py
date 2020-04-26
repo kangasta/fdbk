@@ -47,18 +47,23 @@ def generate_app(db_plugin, db_parameters, log_level=logging.WARN):
 
     def _parse_param(param, parser):
         try:
-            return isoparse(param)
+            return parser(param)
         except Exception:
             return None
+
+    def _filter_parameters(args):
+        return dict(
+            since=_parse_param(args.get('since'), isoparse),
+            until=_parse_param(args.get('until'), isoparse),
+            limit=_parse_param(args.get('limit'), int),
+        )
 
     @app.route('/topics/<topic_id>/data', methods=['GET', 'POST'])
     def data(topic_id):
         if request.method == 'GET':
             return _jsonify(handlers.get_data(
                 topic_id,
-                _parse_param(request.args.get('since'), isoparse),
-                _parse_param(request.args.get('until'), isoparse),
-                _parse_param(request.args.get('limit'), int)))
+                **_filter_parameters(request.args)))
         if request.method == 'POST':
             try:
                 json_in = request.get_json()
@@ -74,18 +79,27 @@ def generate_app(db_plugin, db_parameters, log_level=logging.WARN):
 
     @app.route('/topics/<topic_id>/summary', methods=['GET'])
     def summary(topic_id):
-        return _jsonify(handlers.get_summary(topic_id))
+        return _jsonify(handlers.get_summary(
+            topic_id, **_filter_parameters(request.args)))
 
     @app.route('/comparison/<topic_ids>', methods=['GET'])
     def comparison(topic_ids):
-        return _jsonify(handlers.get_comparison(topic_ids))
+        return _jsonify(handlers.get_comparison(
+            topic_ids, **_filter_parameters(request.args)))
 
     @app.route('/comparison', methods=['GET'])
     def comparison_all():
-        return _jsonify(handlers.get_comparison())
+        return _jsonify(handlers.get_comparison(
+            **_filter_parameters(request.args)))
+
+    @app.route('/overview/<type>', methods=['GET'])
+    def overview(type_):
+        return _jsonify(handlers.get_overview(
+            type_=type_, **_filter_parameters(request.args)))
 
     @app.route('/overview', methods=['GET'])
-    def overview():
-        return _jsonify(handlers.get_overview())
+    def overview_all():
+        return _jsonify(handlers.get_overview(
+            **_filter_parameters(request.args)))
 
     return app
