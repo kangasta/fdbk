@@ -1,19 +1,23 @@
 from numbers import Number
+from statistics import mean, median
 
 from .utils import value_dict
 
 
-def average(data, field, parameters=None):
-    filtered_data = [d[field]
-                     for d in data if isinstance(d[field], Number)]
-    if not filtered_data:
-        return None
+def use_function(function, name, check_empty=False):
+    def value_function(data, field, parameters=None):
+        try:
+            if check_empty:
+                next(d[field] for d in data if isinstance(d[field], Number))
 
-    return value_dict(
-        type="average",
-        field=field,
-        value=sum(i / float(len(filtered_data)) for i in filtered_data)
-    )
+            return value_dict(
+                type=name, field=field, value=function(
+                    d[field] for d in data if isinstance(
+                        d[field], Number)))
+        except Exception:
+            return None
+
+    return value_function
 
 
 def latest(data, field, parameters=None):
@@ -52,8 +56,13 @@ def last_falsy(data, field, parameters=None):
 
 
 VALUE_FUNCS = dict(
-    average=average,
+    average=use_function(mean, 'average'),
+    max=use_function(max, 'max'),
+    mean=use_function(mean, 'mean'),
+    median=use_function(median, 'median'),
+    min=use_function(min, 'min'),
     latest=latest,
     last_truthy=last_truthy,
     last_falsy=last_falsy,
+    sum=use_function(sum, 'sum', check_empty=True),
 )
