@@ -46,11 +46,7 @@ class DictConnection(DBConnection):
         return topic_d["id"]
 
     def add_data(self, topic_id, values):
-        try:
-            topic_d = next(
-                i for i in self._dict["topics"] if i["id"] == topic_id)
-        except StopIteration:
-            raise KeyError(topic_not_found(topic_id))
+        topic_d = self._get_topic_dict(topic_id)
         fields = topic_d["fields"]
 
         data = generate_data_entry(topic_id, fields, values)
@@ -63,21 +59,18 @@ class DictConnection(DBConnection):
 
         return generate_topics_list(topics)
 
-    def get_topic(self, topic_id):
+    def _get_topic_dict(self, topic_id):
         try:
-            topic = next(
+            return next(
                 i for i in self._dict["topics"] if i["id"] == topic_id)
         except StopIteration:
             raise KeyError(topic_not_found(topic_id))
 
-        return generate_topic_response(topic)
+    def get_topic(self, topic_id):
+        return generate_topic_response(self._get_topic_dict(topic_id))
 
     def get_data(self, topic_id, since=None, until=None, limit=None):
-        try:
-            topic_d = next(
-                i for i in self._dict["topics"] if i["id"] == topic_id)
-        except StopIteration:
-            raise KeyError(topic_not_found(topic_id))
+        topic_d = self._get_topic_dict(topic_id)
         fields = topic_d["fields"]
         data = self._dict[topic_id]
 
