@@ -19,6 +19,19 @@ def parse_filter_parameters(args):
     )
 
 
+def _get_response_or_not_found(function, args, kwargs=None):
+    if not kwargs:
+        kwargs = {}
+
+    try:
+        data = function(*args, **kwargs)
+        return data, 200
+    except Exception as error:
+        return {
+            "error": str(error)
+        }, 404
+
+
 class ServerHandlers:
     def __init__(self, db_connection):
         self._db_connection = db_connection
@@ -64,42 +77,24 @@ class ServerHandlers:
         return self._db_connection.get_topics(type_), 200
 
     def get_topic(self, topic_id):
-        try:
-            topic_json = self._db_connection.get_topic(topic_id)
-            return topic_json, 200
-        except KeyError as error:
-            return {
-                "error": str(error)
-            }, 404
+        return _get_response_or_not_found(
+            self._db_connection.get_topic, (topic_id,))
 
     def get_data(self, topic_id, query_args):
-        try:
-            data = self._db_connection.get_data(
-                topic_id, **parse_filter_parameters(query_args))
-            return data, 200
-        except KeyError as error:
-            return {
-                "error": str(error)
-            }, 404
+        return _get_response_or_not_found(
+            self._db_connection.get_data,
+            (topic_id,),
+            parse_filter_parameters(query_args))
 
     def get_latest(self, topic_id):
-        try:
-            data = self._db_connection.get_latest(topic_id)
-            return data, 200
-        except Exception as error:
-            return {
-                "error": str(error)
-            }, 404
+        return _get_response_or_not_found(
+            self._db_connection.get_latest, (topic_id,))
 
     def get_summary(self, topic_id, query_args):
-        try:
-            data = self._db_connection.get_summary(
-                topic_id, **parse_filter_parameters(query_args))
-            return data, 200
-        except KeyError as error:
-            return {
-                "error": str(error)
-            }, 404
+        return _get_response_or_not_found(
+            self._db_connection.get_summary,
+            (topic_id,),
+            parse_filter_parameters(query_args))
 
     def get_comparison(self, topic_ids=None, query_args=None):
         topic_ids_a = topic_ids.split(',') if topic_ids else None
