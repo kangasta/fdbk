@@ -30,6 +30,7 @@ setuptools.setup(
         "importlib_resources; python_version<'3.7'",
         "jsonschema",
         "flask",
+        "python-dateutil",
         "requests"
     ],
     python_requires='>=3.6',

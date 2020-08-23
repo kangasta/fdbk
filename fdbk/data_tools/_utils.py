@@ -1,8 +1,9 @@
 from fdbk.utils.messages import (
     method_not_supported, field_is_undefined, collection_name_is_undefined)
 
-from .functions import functions as data_functions
+from .functions import functions as data_functions, CHART_FUNCS
 from .functions.utils import chart_dict, statistics_dict
+from ._aggregate import aggregate
 
 
 def _create_chart(type_, field):
@@ -180,9 +181,16 @@ def post_process(statistics):
     return _process(funcs, statistics)
 
 
-def run_data_tools(topic_d, data):
+def run_data_tools(topic_d, data, aggregate_to=None, aggregate_with=None):
     results = []
     warnings = []
+
+    if aggregate_to:
+        chart_data, aggregate_warnings = aggregate(
+            data, aggregate_to, aggregate_with)
+        warnings.extend(aggregate_warnings)
+    else:
+        chart_data = data
 
     for instruction in topic_d['data_tools']:
         if instruction["method"] not in data_functions:
@@ -191,9 +199,12 @@ def run_data_tools(topic_d, data):
         if instruction["field"] not in topic_d["fields"]:
             warnings.append(field_is_undefined(instruction["field"]))
             continue
+        is_chart = instruction["method"] in CHART_FUNCS
 
         result = data_functions[instruction.get("method")](
-            data, instruction.get("field"), instruction.get("parameters")
+            data if not is_chart else chart_data,
+            instruction.get("field"),
+            instruction.get("parameters")
         )
         if result is not None:
             result["payload"]["topic_name"] = topic_d["name"]

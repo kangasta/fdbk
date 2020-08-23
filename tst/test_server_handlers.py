@@ -10,7 +10,7 @@ from fdbk.server import parse_filter_parameters, ServerHandlers
 class ServerHandlersTest(TestCase):
     def _assert_status(self, expected_status, function, *args, **kwargs):
         data, status = function(*args, **kwargs)
-        self.assertEqual(status, expected_status)
+        self.assertEqual(status, expected_status, f'data={str(data)}')
         return data
 
     def _create_topic(self, server_handlers, topic):
@@ -22,14 +22,23 @@ class ServerHandlersTest(TestCase):
             since="2020-04-26T19:18:14.123456Z",
             until="2020-04-26T19:18:14.123456Z",
             limit="123",
+            aggregate_to="25",
+            aggregate_with="min",
             asd="asd"
         )
 
-        parsed = parse_filter_parameters(params)
-        self.assertEqual(parsed.get("since"), datetime(2020,4,26,19,18,14,123456, tzutc()))
-        self.assertEqual(parsed.get("until"), datetime(2020,4,26,19,18,14,123456, tzutc()))
-        self.assertEqual(parsed.get("limit"), 123)
-        self.assertIsNone(parsed.get("asd"))
+        for include_aggretate in (True, False):
+            parsed = parse_filter_parameters(params, include_aggretate)
+            self.assertEqual(parsed.get("since"), datetime(2020,4,26,19,18,14,123456, tzutc()))
+            self.assertEqual(parsed.get("until"), datetime(2020,4,26,19,18,14,123456, tzutc()))
+            self.assertEqual(parsed.get("limit"), 123)
+            if include_aggretate:
+                self.assertEqual(parsed.get("aggregate_to"), 25)
+                self.assertEqual(parsed.get("aggregate_with"), "min")
+            else:
+                self.assertIsNone(parsed.get("aggregate_to"))
+                self.assertIsNone(parsed.get("aggregate_with"))
+            self.assertIsNone(parsed.get("asd"))
 
     def test_parse_filter_parameters_catches_parsing_error(self):
         parsed = parse_filter_parameters(dict(limit="cow"))
@@ -47,12 +56,15 @@ class ServerHandlersTest(TestCase):
         s = ServerHandlers(DictConnection())
         self._assert_status(200, s.add_topic, dict(name="topic"))
 
-    def test_add_data_get_data_and_get_latest_and_get_summary(self):
+    def test_add_data_get_data_and_get_latest_and_get_summary_get_overview(self):
         s = ServerHandlers(DictConnection())
 
         self._assert_status(404, s.get_latest, None)
 
-        topic_id = self._create_topic(s, dict(name="topic", fields=["number"]))
+        data_tools = [
+            {"field":"number", "method":"line"},
+        ]
+        topic_id = self._create_topic(s, dict(name="topic", fields=["number"], data_tools=data_tools))
 
         self._assert_status(404, s.get_latest, topic_id)
 
@@ -70,6 +82,14 @@ class ServerHandlersTest(TestCase):
         self.assertEqual(len(response), 2)
 
         self._assert_status(200, s.get_summary, topic_id, {})
+
+        for i in range(5):
+            self._assert_status(200, s.add_data, topic_id, dict(number=i))
+
+        response = self._assert_status(200, s.get_overview, None, dict(aggregate_to=3))
+        data = response["statistics"][0]["payload"]["data"]["datasets"][0]["data"]
+        self.assertLessEqual(len(data), 3)
+
 
     def test_add_data_validations(self):
         s = ServerHandlers(DictConnection())

@@ -272,3 +272,29 @@ class DBConnectionTest(TestCase):
 
         self.assertEqual(len(overview["statistics"]), 3)
         self.assertEqual(overview["statistics"][0]["payload"]["unit"], "scalar")
+
+    def test_summary_overview_aggregate(self):
+        data_tools = [
+            {"field":"number", "method":"line"},
+        ]
+
+        units_d = {"field":"number", "unit":"scalar"}
+
+        C = DictConnection()
+        topic_id = C.add_topic(
+            "topic",
+            description="description",
+            fields=["number"],
+            data_tools=data_tools,
+            units=[units_d]
+        )
+        for i in range(10):
+            C.add_data(topic_id, {"number": i})
+
+        result = C.get_overview(aggregate_to=3)
+        data = result["statistics"][0]["payload"]["data"]["datasets"][0]["data"]
+        self.assertEqual(len(data), 3)
+
+        result = C.get_summary(topic_id, aggregate_to=3)
+        data = result["statistics"][0]["payload"]["data"]["datasets"][0]["data"]
+        self.assertEqual(len(data), 3)
