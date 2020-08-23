@@ -11,12 +11,22 @@ def _parse_param(param, parser):
         return None
 
 
-def parse_filter_parameters(args):
-    return dict(
+def parse_filter_parameters(args, include_aggregate=False):
+    query = dict(
         since=_parse_param(args.get('since'), isoparse),
         until=_parse_param(args.get('until'), isoparse),
-        limit=_parse_param(args.get('limit'), int),
+        limit=_parse_param(args.get('limit'), int)
     )
+
+    if not include_aggregate:
+        return query
+
+    aggregate = dict(
+        aggregate_to=_parse_param(args.get('aggregate_to'), int),
+        aggregate_with=args.get('aggregate_with')
+    )
+
+    return {**aggregate, **query}
 
 
 def _get_response_or_not_found(function, args, kwargs=None):
@@ -94,7 +104,7 @@ class ServerHandlers:
         return _get_response_or_not_found(
             self._db_connection.get_summary,
             (topic_id,),
-            parse_filter_parameters(query_args))
+            parse_filter_parameters(query_args, include_aggregate=True))
 
     def get_comparison(self, topic_ids=None, query_args=None):
         topic_ids_a = topic_ids.split(',') if topic_ids else None
@@ -102,8 +112,10 @@ class ServerHandlers:
             query_args = {}
 
         try:
+            params = parse_filter_parameters(
+                query_args, include_aggregate=True)
             data = self._db_connection.get_comparison(
-                topic_ids_a, **parse_filter_parameters(query_args))
+                topic_ids_a, **params)
             return data, 200
         except KeyError as error:
             return {
@@ -115,8 +127,10 @@ class ServerHandlers:
             query_args = {}
 
         try:
+            params = parse_filter_parameters(
+                query_args, include_aggregate=True)
             data = self._db_connection.get_overview(
-                type_=type_, **parse_filter_parameters(query_args))
+                type_=type_, **params)
             return data, 200
         except KeyError as error:
             return {
