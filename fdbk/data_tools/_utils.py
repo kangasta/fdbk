@@ -1,5 +1,8 @@
 from fdbk.utils.messages import (
-    method_not_supported, field_is_undefined, collection_name_is_undefined)
+    method_not_supported,
+    field_is_undefined,
+    collection_name_is_undefined,
+    no_data)
 
 from .functions import functions as data_functions, CHART_FUNCS
 from .functions.utils import chart_dict, statistics_dict
@@ -184,6 +187,10 @@ def post_process(statistics):
 def run_data_tools(topic_d, data, aggregate_to=None, aggregate_with=None):
     results = []
     warnings = []
+
+    if not data:
+        warnings.append(no_data(topic_d))
+        return ([], warnings,)
 
     if aggregate_to:
         chart_data, aggregate_warnings = aggregate(

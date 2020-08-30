@@ -1,8 +1,8 @@
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
-from fdbk.data_tools import aggregate, functions
-from fdbk.utils.messages import method_not_supported
+from fdbk.data_tools import aggregate, functions, run_data_tools
+from fdbk.utils.messages import method_not_supported, no_data
 
 def _test_timestamp(i):
     return f'2020-08-23T00:{i // 60:02}:{i % 60:02}Z'
@@ -14,6 +14,23 @@ class DataToolsTest(TestCase):
     def test_summary_funcs_return_none_on_empty_data(self):
         for fn in functions.values():
             self.assertIsNone(fn([], 'field'))
+
+    def test_run_data_tools_empty_data(self):
+        topic_d = dict(id='test_id', name='Test name')
+        data = []
+
+        def _check_results(results, warnings, topic_d=None):
+            self.assertEqual(result, [])
+            self.assertEqual(
+                warnings[0],
+                no_data(topic_d))
+
+        result, warnings = aggregate(data, 3)
+        _check_results(result, warnings)
+
+        result, warnings = run_data_tools(topic_d, data)
+        _check_results(result, warnings, topic_d)
+
 
     def test_value_functions(self):
         data = generate_test_data()
