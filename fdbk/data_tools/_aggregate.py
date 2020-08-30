@@ -3,7 +3,8 @@ from dateutil.parser import isoparse
 
 from fdbk.utils import timestamp_as_str
 from fdbk.utils.messages import (
-    method_not_supported)
+    method_not_supported,
+    no_data)
 
 from .functions import functions as data_functions, VALUE_FUNCS
 
@@ -26,6 +27,10 @@ def aggregate(data, aggregate_to, aggregate_with=None):
 
     warnings = []
     aggregated = []
+
+    if not data:
+        warnings.append(no_data())
+        return ([], warnings,)
 
     if aggregate_with not in VALUE_FUNCS:
         warnings.append(method_not_supported(aggregate_with))
