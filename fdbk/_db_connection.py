@@ -1,7 +1,10 @@
 '''Base class for DB connections.
 '''
 
+from concurrent.futures import wait, ALL_COMPLETED, ThreadPoolExecutor
+
 from fdbk.data_tools import post_process, run_data_tools
+from fdbk.utils.messages import topic_not_found
 
 
 class DBConnection:
@@ -152,6 +155,17 @@ class DBConnection:
 
         return summary_d
 
+    def _get_topic_statistics(
+            self,
+            topic_d,
+            since=None,
+            until=None,
+            limit=None,
+            aggregate_to=None,
+            aggregate_with=None):
+        data_d = self.get_data(topic_d.get("id"), since, until, limit)
+        return run_data_tools(topic_d, data_d, aggregate_to, aggregate_with)
+
     def _run_data_tools_for_many(self,
                                  topic_ids=None,
                                  type_=None,
@@ -160,28 +174,41 @@ class DBConnection:
                                  limit=None,
                                  aggregate_to=None,
                                  aggregate_with=None):
-        if not topic_ids:
-            # TODO: only fetch topics list once in this function
-            topic_ids = [topic["id"] for topic in self.get_topics(type_)]
+        executor = ThreadPoolExecutor()
+        warnings = []
+
+        if topic_ids:
+            topics = {}
+            for topic_id in topic_ids:
+                try:
+                    topics[topic_id] = self.get_topic(topic_id)
+                except KeyError as e:
+                    warnings.append(topic_not_found(topic_id))
+        else:
+            topics = {topic["id"]: topic for topic in self.get_topics(type_)}
 
         result_d = {
             "topic_names": [],
-            "topic_ids": topic_ids,
+            "topic_ids": list(topics.keys()),
             "fields": [],
             "statistics": [],
-            "warnings": []
+            "warnings": warnings
         }
 
-        results = []
-        for topic_id in topic_ids:
-            data_d = self.get_data(topic_id, since, until, limit)
-            topic_d = self.get_topic(topic_id)
+        jobs = []
+        params = (since, until, limit, aggregate_to, aggregate_with,)
+        for topic_d in topics.values():
+            jobs.append(
+                executor.submit(
+                    self._get_topic_statistics, topic_d, *params))
 
             result_d["topic_names"].append(topic_d["name"])
             result_d["fields"].extend(topic_d["fields"])
 
-            new_results, warnings = run_data_tools(
-                topic_d, data_d, aggregate_to, aggregate_with)
+        wait(jobs, return_when=ALL_COMPLETED)
+        results = []
+        for job in jobs:
+            new_results, warnings = job.result()
             results.extend(new_results)
             result_d["warnings"].extend(warnings)
 
