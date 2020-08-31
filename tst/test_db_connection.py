@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 from jsonschema.exceptions import ValidationError
 
 from fdbk import DBConnection, DictConnection
+from fdbk.utils.messages import topic_not_found
 from fdbk.validate import validate_statistics_array
 
 class DBConnectionTest(TestCase):
@@ -172,6 +173,15 @@ class DBConnectionTest(TestCase):
 
         self.assertEqual(summary["statistics"][0]["payload"]["value"], data[3]["timestamp"])
         self.assertEqual(summary["statistics"][1]["payload"]["value"], data[2]["timestamp"])
+
+    def test_run_data_tools_topic_not_found(self):
+        C = DictConnection()
+
+        result = C.get_overview(['invalid_id'])
+        self.assertEqual(result.get('statistics'), [])
+
+        warnings = result.get('warnings')
+        self.assertEqual(warnings[0], topic_not_found('invalid_id'))
 
     def _test_run_data_tools_for_many(self, fn, data_tools):
         topic_ids = []
