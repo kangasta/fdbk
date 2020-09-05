@@ -19,6 +19,32 @@ class CommonTest:
         with self.assertRaises(KeyError):
             self.C.add_data("topic_id", {"key": "value"})
 
+    def test_template_topics(self):
+        template_id = self.C.add_topic(
+            "test_template",
+            type_str='template',
+            fields=['number'])
+        self.assertEqual(template_id, "test_template")
+
+        topic_id = self.C.add_topic('topic', template=template_id)
+        topic_d = self.C.get_topic(topic_id)
+        self.assertEqual(topic_d.get('fields'), ['number'])
+
+        topics = self.C.get_topics()
+        self.assertEqual(len(topics), 2)
+        for topic in topics:
+            self.assertEqual(topic.get('fields'), ['number'])
+
+    def test_cannot_add_topic_with_invalid_template(self):
+        with self.assertRaises(KeyError):
+            self.C.add_topic('topic1', template='test_template')
+
+        self.C.add_topic("test_template", type_str='template')
+        topic_id = self.C.add_topic('topic2', template='test_template')
+
+        with self.assertRaises(AssertionError):
+            self.C.add_topic('topic3', template=topic_id)
+
     def test_cannot_add_data_with_non_matching_number_of_fields(self):
         topic_id = self.C.add_topic(
             "topic",
@@ -34,6 +60,14 @@ class CommonTest:
             fields=["number"])
         with self.assertRaises(ValueError):
             self.C.add_data(topic_id, {"key": "value"})
+
+    def test_cannot_add_data_to_template(self):
+        topic_id = self.C.add_topic(
+            "topic",
+            type_str="template",
+            fields=["number"])
+        with self.assertRaises(AssertionError):
+            self.C.add_data(topic_id, {"number": 3})
 
     def test_add_data_affects_get_data_output(self):
         topic_id = self.C.add_topic(
@@ -110,22 +144,33 @@ class CommonTest:
         self.assertEqual(dataset["data"][0]["x"], '2020-01-01T01:03:00Z')
         self.assertEqual(dataset["data"][-1]["x"], '2020-01-01T01:07:00Z')
 
-    def test_can_get_topics_type(self):
+    def test_can_get_topics_type_and_template(self):
+        self.C.add_topic(
+            "te1",
+            type_str="template",
+            fields=["number"])
+        self.C.add_topic(
+            "te2",
+            type_str="template",
+            fields=["letter"])
         self.C.add_topic(
             "1",
-            type_str="a",
-            fields=["number"])
+            template="te1")
         self.C.add_topic(
             "2",
-            type_str="a",
-            fields=["number"])
+            template="te1")
         self.C.add_topic(
             "3",
-            type_str="b",
-            fields=["letter"])
+            template="te2")
 
-        topics = self.C.get_topics('a')
+        topics = self.C.get_topics('template')
         self.assertEqual(len(topics), 2)
 
-        topics = self.C.get_topics('b')
+        topics = self.C.get_topics('topic')
+        self.assertEqual(len(topics), 3)
+
+        topics = self.C.get_topics(template='te1')
+        self.assertEqual(len(topics), 2)
+
+        topics = self.C.get_topics(template='te2')
         self.assertEqual(len(topics), 1)

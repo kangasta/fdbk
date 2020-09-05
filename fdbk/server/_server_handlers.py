@@ -114,7 +114,7 @@ class ServerHandlers:
         try:
             params = parse_filter_parameters(
                 query_args, include_aggregate=True)
-            data = self._db_connection.get_comparison(
+            data = self._db_connection.get_overview(
                 topic_ids_a, **params)
             return data, 200
         except KeyError as error:
@@ -122,7 +122,7 @@ class ServerHandlers:
                 "error": str(error)
             }, 404
 
-    def get_overview(self, type_=None, query_args=None):
+    def get_overview(self, template=None, query_args=None):
         if not query_args:
             query_args = {}
 
@@ -130,7 +130,7 @@ class ServerHandlers:
             params = parse_filter_parameters(
                 query_args, include_aggregate=True)
             data = self._db_connection.get_overview(
-                type_=type_, **params)
+                template=template, **params)
             return data, 200
         except KeyError as error:
             return {

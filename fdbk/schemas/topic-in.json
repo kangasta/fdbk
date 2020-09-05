@@ -24,7 +24,8 @@
   "properties": {
     "id": {"type": "string"},
     "name": {"type": "string"},
-    "type": {
+    "type": { "enum": ["topic", "template"]},
+    "template": {
       "oneOf": [
         {"type": "string"},
         {"type": "null"}
@@ -50,6 +51,6 @@
     },
     "metadata": {"type": "object"}
   },
-  "required": ["name", "fields"],
+  "required": ["name"],
   "additionalProperties": false
 }
