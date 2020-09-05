@@ -198,7 +198,7 @@ class DBConnectionTest(TestCase):
             C.add_data(topic_ids[-1], {"number": 4})
             C.add_data(topic_ids[-1], {"number": 2})
         if fn == "get_comparison":
-            result = C.get_comparison(topic_ids)
+            result = C.get_overview(topic_ids)
         elif fn == "get_overview":
             result = C.get_overview()
         self.assertEqual(result["topic_names"], ["topic_0", "topic_1", "topic_2"])

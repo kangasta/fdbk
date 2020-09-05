@@ -7,6 +7,7 @@ TOPIC_FIELDS = [
     "name",
     "id",
     "type",
+    "template",
     "description",
     "fields",
     "units",
@@ -86,6 +87,7 @@ def generate_data_response(data, fields):
 def generate_topic_dict(
         name,
         type_str=None,
+        template=None,
         description=None,
         fields=None,
         units=None,
@@ -96,7 +98,8 @@ def generate_topic_dict(
 
     Args:
         name: Name of the topic.
-        type_str: Type of the topic, for example 'form' or 'sensor'.
+        type_str: Type of the topic, 'topic' or 'template'.
+        template: Template to inherit values from.
         description: Description of the topic.
         fields: List of data field names included in the topic.
         units: List of units for field.
@@ -107,11 +110,11 @@ def generate_topic_dict(
 
     Returns:
         Generated topic dict
-
     '''
     topic_d = {
         "name": name,
-        "type": type_str,
+        "type": type_str if type_str is not None else "topic",
+        "template": template,
         "description": description,
         "fields": fields if fields is not None else [],
         "units": units if units is not None else [],
@@ -120,7 +123,10 @@ def generate_topic_dict(
     }
 
     if add_id:
-        topic_d["id"] = str(uuid4())
+        if type_str == 'template':
+            topic_d["id"] = name
+        else:
+            topic_d["id"] = str(uuid4())
 
     validate_topic_dict(topic_d)
 

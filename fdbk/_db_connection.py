@@ -11,6 +11,27 @@ class DBConnection:
     '''Base class for DB connections.
     '''
 
+    def validate_template(self, topic_d):
+        ''' Validate that topics template is a template topic
+
+        Args:
+            topic_d: Topic dict which template is validated
+
+        Returns:
+            None
+
+        Raises:
+            AssertionError: Template is not a valid template
+            KeyError: Template not found from DB
+        '''
+        template = topic_d.get('template')
+        if not template:
+            return
+
+        template_d = self.get_topic(template)
+        if template_d.get('type') != 'template':
+            raise AssertionError('Templates type is not template.')
+
     def add_topic(self, name, **kwargs):
         '''Adds new topic to DB.
 
@@ -21,7 +42,8 @@ class DBConnection:
             Topic ID of the newly created topic
 
         Raises:
-            KeyError: Topic already exists in DB
+            KeyError: Topic already exists in DB or topics template does not
+                exist in DB.
         '''
         raise NotImplementedError(
             "Functionality not implemented by selected DB connection")
@@ -38,26 +60,90 @@ class DBConnection:
             None
 
         Raises:
+            AssertionError: Topic is a template topic
             KeyError: Topic does not exist in DB
             ValueError: Values do not match those defined for the topic
         '''
         raise NotImplementedError(
             "Functionality not implemented by selected DB connection")
 
-    def get_topics(self, type_=None):
-        '''Gets list of topic dicts
+    def get_topics_without_templates(self, type_=None, template=None):
+        '''Gets list of topic dicts without resolving templates
+
+        Fetches all topics by default.
 
         Args:
-            type_: Type of topics to fetch. By default all topics are fetched.
+            type_: Type of topics to fetch
+            template: Template of topics to fetch.
+
+        Returns:
+            List of topic dicts without fields from possible templates
+        '''
+        raise NotImplementedError(
+            "Functionality not implemented by selected DB connection")
+
+    @staticmethod
+    def _remove_empty(obj):
+        ret = {}
+        for key, value in obj.items():
+            if value:
+                ret[key] = value
+        return ret
+
+    @staticmethod
+    def _with_templates(topic_d, templates):
+        template = topic_d.get('template')
+        if template:
+            try:
+                template_d = next(
+                    i for i in templates if i.get('id') == template)
+            except StopIteration:
+                raise KeyError(topic_not_found(template))
+            return {
+                **DBConnection._with_templates(
+                    template_d,
+                    templates),
+                **DBConnection._remove_empty(topic_d)}
+        else:
+            return topic_d
+
+    def get_topics(self, type_=None, template=None):
+        '''Gets list of topic dicts with values from templates
+
+        Fetches all topics by default.
+
+        Args:
+            type_: Type of topics to fetch
+            template: Template of topics to fetch.
 
         Returns:
             List of topic dicts
+
+        Raises:
+            KeyError: Template of a topic not found from the DB
+        '''
+        topics = self.get_topics_without_templates(type_, template=template)
+        templates = self.get_topics_without_templates(type_='template')
+
+        return [self._with_templates(topic, templates) for topic in topics]
+
+    def get_topic_without_templates(self, topic_id):
+        '''Get topic dict by ID without resolving templates
+
+        Args:
+            topic_id: ID of the topic to find
+
+        Returns:
+            Topic dictionary without fields from possible templates
+
+        Raises:
+            KeyError: Topic does not exist in DB
         '''
         raise NotImplementedError(
             "Functionality not implemented by selected DB connection")
 
     def get_topic(self, topic_id):
-        '''Get topic dict by ID
+        '''Get topic dict by ID with values from templates
 
         Args:
             topic_id: ID of the topic to find
@@ -68,8 +154,12 @@ class DBConnection:
         Raises:
             KeyError: Topic does not exist in DB
         '''
-        raise NotImplementedError(
-            "Functionality not implemented by selected DB connection")
+        topic_d = self.get_topic_without_templates(topic_id)
+        template = topic_d.get('template')
+        if template:
+            return {**self.get_topic(template), **self._remove_empty(topic_d)}
+        else:
+            return topic_d
 
     def get_data(self, topic_id, since=None, until=None, limit=None):
         '''Get all data under given topic
@@ -168,7 +258,7 @@ class DBConnection:
 
     def _run_data_tools_for_many(self,
                                  topic_ids=None,
-                                 type_=None,
+                                 template=None,
                                  since=None,
                                  until=None,
                                  limit=None,
@@ -185,7 +275,8 @@ class DBConnection:
                 except KeyError as e:
                     warnings.append(topic_not_found(topic_id))
         else:
-            topics = {topic["id"]: topic for topic in self.get_topics(type_)}
+            topics = {
+                topic["id"]: topic for topic in self.get_topics(template)}
 
         result_d = {
             "topic_names": [],
@@ -219,17 +310,10 @@ class DBConnection:
         result_d["fields"] = list(set(result_d["fields"]))
         return result_d
 
-    def get_comparison(self, topic_ids=None, **kwargs):
-        '''Get comparison of the data of the given topic IDs
-
-        See get_overview.
-        '''
-        return self._run_data_tools_for_many(topic_ids, **kwargs)
-
     def get_overview(
             self,
             topic_ids=None,
-            type_=None,
+            template=None,
             since=None,
             until=None,
             limit=None,
@@ -240,8 +324,8 @@ class DBConnection:
         Args:
             topic_ids: List of topic IDs to overview. By default all topics are
                 included.
-            type_: Type of topics to include. Only has effect is topic_ids is
-                empty. By default all topics are included.
+            template: Template of topics to include. Only has effect if
+                topic_ids is empty. By default all topics are included.
             since: Datetime of the earliest entry to include
             until: Datetime of the most recent entry to include
             limit: Number of entries to include from the most recent
@@ -256,7 +340,7 @@ class DBConnection:
         '''
         return self._run_data_tools_for_many(
             topic_ids=topic_ids,
-            type_=type_,
+            template=template,
             since=since,
             until=until,
             limit=limit,

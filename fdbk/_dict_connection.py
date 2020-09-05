@@ -35,6 +35,7 @@ class DictConnection(DBConnection):
 
     def add_topic(self, name, **kwargs):
         topic_d = generate_topic_dict(name, add_id=True, **kwargs)
+        self.validate_template(topic_d)
 
         self._dict["topics"].append(topic_d)
         self._dict[topic_d["id"]] = []
@@ -47,15 +48,19 @@ class DictConnection(DBConnection):
 
     def add_data(self, topic_id, values):
         topic_d = self._get_topic_dict(topic_id)
+        if topic_d.get('type') == 'template':
+            raise AssertionError('Cannot add data to template topic.')
         fields = topic_d["fields"]
 
         data = generate_data_entry(topic_id, fields, values)
         self._dict[topic_id].append(data)
 
-    def get_topics(self, type_=None):
+    def get_topics_without_templates(self, type_=None, template=None):
         topics = self._dict["topics"]
         if type_:
             topics = [i for i in topics if i.get('type') == type_]
+        if template:
+            topics = [i for i in topics if i.get('template') == template]
 
         return generate_topics_list(topics)
 
@@ -66,7 +71,7 @@ class DictConnection(DBConnection):
         except StopIteration:
             raise KeyError(topic_not_found(topic_id))
 
-    def get_topic(self, topic_id):
+    def get_topic_without_templates(self, topic_id):
         return generate_topic_response(self._get_topic_dict(topic_id))
 
     def get_data(self, topic_id, since=None, until=None, limit=None):
