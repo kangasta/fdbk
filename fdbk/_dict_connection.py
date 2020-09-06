@@ -33,12 +33,23 @@ class DictConnection(DBConnection):
             "topics": topics
         }
 
-    def add_topic(self, name, **kwargs):
+    def _topic_i(self, topic_id):
+        return next(
+            i for i, data in enumerate(
+                self._dict["topics"]) if data["id"] == topic_id)
+
+    def add_topic(self, name, overwrite=False, **kwargs):
         topic_d = generate_topic_dict(name, add_id=True, **kwargs)
         self.validate_template(topic_d)
 
-        self._dict["topics"].append(topic_d)
-        self._dict[topic_d["id"]] = []
+        try:
+            i = self._topic_i(topic_d["id"])
+            if not overwrite:
+                raise KeyError(duplicate_topic_id(topic_d["id"]))
+            self._dict["topics"][i] = topic_d
+        except StopIteration:
+            self._dict["topics"].append(topic_d)
+            self._dict[topic_d["id"]] = []
 
         if self._topics_backup:
             with open(expanduser(self._topics_backup), 'w') as f:
@@ -46,14 +57,27 @@ class DictConnection(DBConnection):
 
         return topic_d["id"]
 
-    def add_data(self, topic_id, values):
-        topic_d = self._get_topic_dict(topic_id)
+    def _timestamp_i(self, topic_id, timestamp):
+        return next(
+            i for i, data in enumerate(
+                self._dict[topic_id]) if data["timestamp"] == timestamp)
+
+    def add_data(self, topic_id, values, overwrite=False):
+        topic_d = self.get_topic(topic_id)
         if topic_d.get('type') == 'template':
             raise AssertionError('Cannot add data to template topic.')
         fields = topic_d["fields"]
 
         data = generate_data_entry(topic_id, fields, values)
-        self._dict[topic_id].append(data)
+
+        try:
+            i = self._timestamp_i(topic_id, data['timestamp'])
+            if not overwrite:
+                raise AssertionError(
+                    duplicate_timestamp(topic_d, data['timestamp']))
+            self._dict[topic_id][i] = data
+        except StopIteration:
+            self._dict[topic_id].append(data)
 
     def get_topics_without_templates(self, type_=None, template=None):
         topics = self._dict["topics"]

@@ -57,12 +57,18 @@ class ClientConnectionTest(TestCase):
     def test_add_topic_triggers_correct_call(self):
         c = ClientConnection("")
         with patch('requests.post', side_effect=self.mock_requests_post), patch('fdbk.DictConnection.add_topic', return_value="topic_id") as add_topic:
-            c.add_topic("topic", type_str="template")
-            add_topic.assert_called_with("topic", type_str="template", description=None, fields=[], units=[], data_tools=[], metadata={}, template=None)
+            c.add_topic("topic", type_str="topic")
+            add_topic.assert_called_with("topic", id_str=None, type_str="topic", description=None, fields=[], units=[], data_tools=[], metadata={}, template=None, overwrite=False)
+
+            c.add_topic("topic", id_str="id", type_str="topic", overwrite=True)
+            add_topic.assert_called_with("topic", id_str="id", type_str="topic", description=None, fields=[], units=[], data_tools=[], metadata={}, template=None, overwrite=True)
 
     def test_add_data_triggers_correct_call(self):
         c = ClientConnection("")
         with patch('requests.post', side_effect=self.mock_requests_post), \
             patch('fdbk.DictConnection.add_data') as add_data:
             c.add_data("topic", {"number": 3})
-            add_data.assert_called_with("topic", {"number": 3})
+            add_data.assert_called_with("topic", {"number": 3}, overwrite=False)
+
+            c.add_data("topic", {"number": 3}, overwrite=True)
+            add_data.assert_called_with("topic", {"number": 3}, overwrite=True)

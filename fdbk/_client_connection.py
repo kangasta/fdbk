@@ -16,9 +16,16 @@ class ClientConnection(DBConnection):
         self.__url = url
         self.__token = token
 
-    def add_topic(self, name, **kwargs):
+    @staticmethod
+    def _get_overwrite_query(overwrite):
+        if not overwrite:
+            return ""
+        return "?overwrite=true"
+
+    def add_topic(self, name, overwrite=False, **kwargs):
+        query = self._get_overwrite_query(overwrite)
         response = requests.post(
-            self.__url + "/topics",
+            self.__url + f"/topics{query}",
             json=generate_topic_dict(
                 name,
                 add_id=False,
@@ -29,9 +36,10 @@ class ClientConnection(DBConnection):
 
         return response.json()["topic_id"]
 
-    def add_data(self, topic_id, values):
+    def add_data(self, topic_id, values, overwrite=False):
+        query = self._get_overwrite_query(overwrite)
         response = requests.post(
-            self.__url + "/topics/" + topic_id + "/data", json=values)
+            self.__url + f"/topics/{topic_id}/data{query}", json=values)
 
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))

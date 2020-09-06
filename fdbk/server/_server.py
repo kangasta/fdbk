@@ -38,7 +38,8 @@ def generate_app(db_plugin, db_parameters, log_level=logging.WARN):
                 return jsonify({
                     "error": "No topic data provided in request"
                 }), 404
-            return _jsonify(handlers.add_topic(json_in))
+            return _jsonify(handlers.add_topic(
+                json_in, query_args=request.args))
 
     @app.route('/topics/<topic_id>', methods=['GET'])
     def topics_get(topic_id):
@@ -57,7 +58,8 @@ def generate_app(db_plugin, db_parameters, log_level=logging.WARN):
                 return jsonify({
                     "error": "No topic data provided in request"
                 }), 404
-            return _jsonify(handlers.add_data(topic_id, json_in))
+            return _jsonify(handlers.add_data(
+                topic_id, json_in, query_args=request.args))
 
     @app.route('/topics/<topic_id>/data/latest', methods=['GET', 'POST'])
     def latest(topic_id):
