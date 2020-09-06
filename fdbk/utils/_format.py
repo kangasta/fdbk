@@ -29,7 +29,9 @@ def generate_data_entry(topic_id, fields, values, convert_timestamps=False):
     Args:
         topic_id: Topic ID to add to the entry
         fields: Fields to validate against
-        values: Valued to add to the data entry
+        values: Values to add to the data entry
+        convert_timestamps: Boolean to enable converting timestamps to strings.
+            Diabled by default.
 
     Returns:
         Data entry dict with timestamp and topic ID
@@ -37,13 +39,19 @@ def generate_data_entry(topic_id, fields, values, convert_timestamps=False):
     Raises:
         ValueError: provided values do not match to the provided fields
     '''
-    if len(fields) != len(values):
+    len_values = len(values)
+    if "timestamp" in values:
+        timestamp = values["timestamp"]
+        len_values -= 1
+    else:
+        timestamp = datetime.utcnow()
+
+    if len(fields) != len_values:
         raise ValueError(
             "The number of given values does not match with "
             "the number of fields defined for topic"
         )
 
-    timestamp = datetime.utcnow()
     if convert_timestamps:
         timestamp = timestamp_as_str(timestamp)
 
@@ -93,6 +101,7 @@ def generate_topic_dict(
         units=None,
         data_tools=None,
         metadata=None,
+        id_str=None,
         add_id=True):
     '''Generate topic dictionary
 
@@ -127,6 +136,9 @@ def generate_topic_dict(
             topic_d["id"] = name
         else:
             topic_d["id"] = str(uuid4())
+
+    if id_str and type_str != 'template':
+        topic_d["id"] = id_str
 
     validate_topic_dict(topic_d)
 

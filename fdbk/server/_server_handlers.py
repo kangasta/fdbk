@@ -42,12 +42,25 @@ def _get_response_or_not_found(function, args, kwargs=None):
         }, 404
 
 
+def _get_overwrite(query_args):
+    if not query_args:
+        return False
+
+    overwrite_str = query_args.get("overwrite")
+    if not overwrite_str:
+        return False
+
+    return overwrite_str.lower() == "true"
+
+
 class ServerHandlers:
     def __init__(self, db_connection):
         self._db_connection = db_connection
 
-    def add_topic(self, json_in):
+    def add_topic(self, json_in, query_args=None):
+        overwrite = _get_overwrite(query_args)
         topic = json_in.pop("name", None)
+        id_str = json_in.pop("id", None)
         type_str = json_in.pop("type", None)
         if not topic:
             return {
@@ -56,7 +69,11 @@ class ServerHandlers:
 
         try:
             topic_id = self._db_connection.add_topic(
-                topic, type_str=type_str, **json_in)
+                topic,
+                id_str=id_str,
+                type_str=type_str,
+                overwrite=overwrite,
+                **json_in)
         except Exception as error:
             return {
                 "error": str(error)
@@ -66,9 +83,11 @@ class ServerHandlers:
             "success": "Topic successfully added to DB"
         }, 200
 
-    def add_data(self, topic_id, json_in):
+    def add_data(self, topic_id, json_in, query_args=None):
+        overwrite = _get_overwrite(query_args)
         try:
-            self._db_connection.add_data(topic_id, json_in)
+            self._db_connection.add_data(
+                topic_id, json_in, overwrite=overwrite)
         except KeyError as error:
             # Topic not defined
             return {

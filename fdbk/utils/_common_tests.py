@@ -19,6 +19,23 @@ class CommonTest:
         with self.assertRaises(KeyError):
             self.C.add_data("topic_id", {"key": "value"})
 
+    def test_cannot_add_duplicate_topic_unless_overwrite(self):
+        topic_id = self.C.add_topic("topic", description='1')
+
+        with self.assertRaises(KeyError):
+            self.C.add_topic("topic", description='2', id_str=topic_id)
+
+        self.C.add_topic(
+            "topic",
+            description='3',
+            id_str=topic_id,
+            overwrite=True)
+
+        topics = self.C.get_topics()
+        self.assertEqual(len(topics), 1)
+        self.assertEqual(topics[0]["id"], topic_id)
+        self.assertEqual(topics[0]["description"], "3")
+
     def test_template_topics(self):
         template_id = self.C.add_topic(
             "test_template",
@@ -77,6 +94,29 @@ class CommonTest:
         self.C.add_data(topic_id, {"number": 3})
         self.assertEqual(self.C.get_data(topic_id)[0]["number"], 3)
         self.assertEqual(len(self.C.get_data(topic_id)), 1)
+
+    def test_cannot_add_duplicate_timestamp_unless_overwrite(self):
+        topic_id = self.C.add_topic(
+            "topic",
+            description="description",
+            fields=["number"])
+        timestamp = datetime(2020, 1, 1, 1, 0)
+        self.C.add_data(topic_id, {
+            "number": 3,
+            "timestamp": timestamp})
+
+        with self.assertRaises(AssertionError):
+            self.C.add_data(topic_id, {
+                "number": 5,
+                "timestamp": timestamp})
+
+        self.C.add_data(topic_id, {
+            "number": 7,
+            "timestamp": timestamp}, overwrite=True)
+
+        data = self.C.get_data(topic_id)
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]["number"], 7)
 
     def test_cannot_get_undefined_topic(self):
         with self.assertRaises(KeyError):

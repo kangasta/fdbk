@@ -32,11 +32,14 @@ class DBConnection:
         if template_d.get('type') != 'template':
             raise AssertionError('Templates type is not template.')
 
-    def add_topic(self, name, **kwargs):
+    def add_topic(self, name, overwrite=False, **kwargs):
         '''Adds new topic to DB.
 
         Args:
             name: Name of the topic.
+            overwrite: Boolean to enable overwriting existing topic with the
+                same id. Disabled by default.
+            kwargs: See fdbk.utils.generate_topic_dict
 
         Returns:
             Topic ID of the newly created topic
@@ -48,19 +51,22 @@ class DBConnection:
         raise NotImplementedError(
             "Functionality not implemented by selected DB connection")
 
-    def add_data(self, topic_id, values):
+    def add_data(self, topic_id, values, overwrite=False):
         '''Adds data under given topic in DB
 
         Args:
             topic_id: ID of the topic under which to add data.
             values: Dictionary with field names as keys and field value as
                 value.
+            overwrite: Boolean to enable overwriting existing data-point with
+                the same topic id and timestamp. Disabled by default.
 
         Returns:
             None
 
         Raises:
-            AssertionError: Topic is a template topic
+            AssertionError: Topic is a template topic, topic already has data
+                for given timestamp.
             KeyError: Topic does not exist in DB
             ValueError: Values do not match those defined for the topic
         '''
