@@ -9,18 +9,16 @@ class SysStatus(object):
     def __init__(self, topic_name='System status'):
         self.__topic_name = topic_name
 
-    # TODO #62: add sysstatus template
-
     @property
-    def topic(self):
+    def template(self):
         fields = ['CPU_usage', 'memory_usage', 'disk_usage']
         units = (
             list(map(lambda field: {'field': field, 'unit': 'percent'}, fields))
         )
 
         return {
-            "name": self.__topic_name,
-            "type_str": "topic",
+            "name": "sysstatus",
+            "type_str": "template",
             "description": "System status monitor.",
             "fields": fields,
             "units": units,
@@ -31,6 +29,14 @@ class SysStatus(object):
                 "field": field,
                 "method":"line"
             }, fields))
+        }
+
+    @property
+    def topic(self):
+        return {
+            "name": self.__topic_name,
+            "template": "sysstatus",
+            "type_str": "topic",
         }
 
     @property

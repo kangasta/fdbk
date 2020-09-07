@@ -18,13 +18,11 @@ class NetStatus(object):
         self._target = target
         self._timeout = timeout
 
-    # TODO #62: add netstatus template
-
     @property
-    def topic(self):
+    def template(self):
         return {
-            "name": self._target.get('name'),
-            "type_str": "topic",
+            "name": "netstatus",
+            "type_str": "template",
             "description": "Network connection status monitor.",
             "fields": ['elapsed', 'status_code'],
             "units": [{
@@ -38,6 +36,15 @@ class NetStatus(object):
                 "field": 'elapsed',
                 "method": "line",
             }],
+        }
+
+    @property
+    def topic(self):
+        return {
+            "name": self._target.get('name'),
+            "template": "netstatus",
+            "type_str": "topic",
+            "metadata": {"url": self._target.get('url')},
         }
 
     @property

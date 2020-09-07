@@ -1,4 +1,5 @@
 from datetime import datetime
+from random import randrange
 from unittest import TestCase
 from unittest.mock import Mock, patch
 
@@ -7,7 +8,7 @@ from freezegun import freeze_time
 from fdbk import Reporter, DictConnection
 from fdbk.reporter import _add, _div, _obj_add, _Data
 
-class TestDataSource(object):
+class TestDataSource:
     def __init__(self, pattern, n):
         self._pattern = pattern
         self._i = 0
@@ -35,6 +36,29 @@ class TestDataSource(object):
             raise KeyboardInterrupt
         return {
             "number": num
+        }
+
+class TestDataSourceWithTemplate:
+    @property
+    def template(self):
+        return {
+            "name": "random",
+            "description": "Random numbers from randrange(10)",
+            "type_str": "template",
+            "fields": [ "number" ]
+        }
+
+    @property
+    def topic(self):
+        return {
+            "name": "topic",
+            "template": "random",
+        }
+
+    @property
+    def data(self):
+        return {
+            "number": randrange(10)
         }
 
 class ReporterUtilsTest(TestCase):
@@ -85,6 +109,16 @@ class ReporterTest(TestCase):
         C = R.connection
         self.assertEqual(C.get_topic(R.topic_id)["name"], "topic")
         self.assertEqual(C.get_topic(R.topic_id)["fields"], ["number"])
+
+    def test_creates_template_on_init(self):
+        DS = TestDataSourceWithTemplate()
+        R = Reporter(DS, db_plugin='DictConnection')
+        C = R.connection
+        self.assertEqual(len(C.get_topics()), 2)
+        self.assertEqual(C.get_topics()[0]["type"], "template")
+
+        R = Reporter(DS, db_connection=C)
+        self.assertEqual(len(C.get_topics()), 3)
 
     def test_can_use_existing_connection(self):
         DS = TestDataSource([1,2,3], 3)
