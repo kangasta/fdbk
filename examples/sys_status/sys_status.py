@@ -9,6 +9,8 @@ class SysStatus(object):
     def __init__(self, topic_name='System status'):
         self.__topic_name = topic_name
 
+    # TODO #62: add sysstatus template
+
     @property
     def topic(self):
         fields = ['CPU_usage', 'memory_usage', 'disk_usage']
@@ -18,7 +20,7 @@ class SysStatus(object):
 
         return {
             "name": self.__topic_name,
-            "type_str": "sysstatus",
+            "type_str": "topic",
             "description": "System status monitor.",
             "fields": fields,
             "units": units,
@@ -53,5 +55,5 @@ if __name__ == '__main__':
 
     SYS_STATUS = SysStatus()
 
-    REPORTER = Reporter(SYS_STATUS, args.db_connection, args.db_parameters, verbose=args.verbose)
+    REPORTER = Reporter(SYS_STATUS, db_plugin=args.db_connection, db_parameters=args.db_parameters, verbose=args.verbose)
     REPORTER.start(interval=args.interval, num_samples=args.num_samples)

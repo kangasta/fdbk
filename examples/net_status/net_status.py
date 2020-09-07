@@ -18,11 +18,13 @@ class NetStatus(object):
         self._target = target
         self._timeout = timeout
 
+    # TODO #62: add netstatus template
+
     @property
     def topic(self):
         return {
             "name": self._target.get('name'),
-            "type_str": "netstatus",
+            "type_str": "topic",
             "description": "Network connection status monitor.",
             "fields": ['elapsed', 'status_code'],
             "units": [{
@@ -70,7 +72,9 @@ if __name__ == '__main__':
         targets = targets_cmd + targets_file
         data_sources = (NetStatus(target) for target in targets)
 
-        reporters = (Reporter(data_source, args.db_connection, args.db_parameters, verbose=args.verbose) for data_source in data_sources)
+        db_connection = create_db_connection(args.db_connection, args.db_parameters)
+
+        reporters = (Reporter(data_source, db_connection, verbose=args.verbose) for data_source in data_sources)
 
         threads = []
         for reporter in reporters:
@@ -86,6 +90,6 @@ if __name__ == '__main__':
     from threading import Thread
 
     from fdbk import Reporter
-    from fdbk.utils import get_reporter_argparser
+    from fdbk.utils import create_db_connection, get_reporter_argparser
 
     main()
