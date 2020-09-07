@@ -2,6 +2,12 @@ def _topic_str(topic_d):
     return f'{topic_d["name"]} ({topic_d["id"]})'
 
 
+def created_connection(plugin, parameters):
+    return (
+        f"Created fdbk DB connection of type '{plugin}' with parameters"
+        f"{str(parameters)}")
+
+
 def collection_name_is_undefined(method, field):
     return f'No target list name specified for {method} {field}.'
 

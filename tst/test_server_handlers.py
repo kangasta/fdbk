@@ -5,7 +5,8 @@ from unittest import TestCase
 from unittest.mock import Mock, patch
 
 from fdbk import DictConnection
-from fdbk.server import parse_filter_parameters, ServerHandlers
+from fdbk.server import parse_filter_parameters, ServerHandlers, generate_app
+from fdbk.server._server_handlers import _get_overwrite
 
 class ServerHandlersTest(TestCase):
     def _assert_status(self, expected_status, function, *args, **kwargs):
@@ -16,6 +17,9 @@ class ServerHandlersTest(TestCase):
     def _create_topic(self, server_handlers, topic):
         response = self._assert_status(200, server_handlers.add_topic, topic)
         return response.get("topic_id")
+
+    def test_server_from_plugin_name(self):
+        generate_app(db_plugin='dict', db_parameters=[])
 
     def test_parse_filter_parameters(self):
         params = dict(
@@ -39,6 +43,12 @@ class ServerHandlersTest(TestCase):
                 self.assertIsNone(parsed.get("aggregate_to"))
                 self.assertIsNone(parsed.get("aggregate_with"))
             self.assertIsNone(parsed.get("asd"))
+
+    def test_get_overwrite(self):
+        self.assertTrue(_get_overwrite(dict(overwrite="true")))
+        self.assertTrue(_get_overwrite(dict(overwrite="TrUe")))
+        self.assertFalse(_get_overwrite(dict(overwrite="cat")))
+        self.assertFalse(_get_overwrite(dict(animal="cow")))
 
     def test_parse_filter_parameters_catches_parsing_error(self):
         parsed = parse_filter_parameters(dict(limit="cow"))

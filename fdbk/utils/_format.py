@@ -31,7 +31,7 @@ def generate_data_entry(topic_id, fields, values, convert_timestamps=False):
         fields: Fields to validate against
         values: Values to add to the data entry
         convert_timestamps: Boolean to enable converting timestamps to strings.
-            Diabled by default.
+            Disabled by default.
 
     Returns:
         Data entry dict with timestamp and topic ID

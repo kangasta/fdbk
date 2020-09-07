@@ -44,6 +44,8 @@ class ClientConnection(DBConnection):
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))
 
+        return response.json()["timestamp"]
+
     def get_topics(self, type_=None, template=None):
         # TODO: Error handling
         query = []
@@ -62,7 +64,7 @@ class ClientConnection(DBConnection):
 
     def get_topic(self, topic_id):
         # TODO: Error handling
-        response = requests.get(self.__url + "/topics" + topic_id)
+        response = requests.get(f"{self.__url}/topics/{topic_id}")
 
         if not response.ok:
             raise RuntimeError(json.dumps(response.json()))
