@@ -1,11 +1,18 @@
 def _topic_str(topic_d):
-    return f'{topic_d["name"]} ({topic_d["id"]})'
+    type_ = topic_d.get("type") or topic_d.get("type_str", "topic")
+    type_str = f', {type_}' if type_ != 'topic' else ''
+    return f'{topic_d["name"]} ({topic_d["id"]}{type_str})'
 
 
 def created_connection(plugin, parameters):
     return (
-        f"Created fdbk DB connection of type '{plugin}' with parameters"
-        f"{str(parameters)}")
+        f"Created fdbk DB connection of type '{plugin}' with parameters "
+        f"{str(parameters)}.")
+
+
+def created_topic(topic_d, id_):
+    topic_d = {**topic_d, "id": id_}
+    return (f"Created topic '{_topic_str(topic_d)}' to the database.")
 
 
 def collection_name_is_undefined(method, field):

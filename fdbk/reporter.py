@@ -160,11 +160,17 @@ class Reporter:
         if not self._data_source:
             raise ValueError('Cannot create new topic without data source')
 
+        try:
+            template_d = self._data_source.template
+            template_id = self._client.add_topic(**template_d)
+            self._print(created_topic(template_d, template_id))
+        except (AttributeError, KeyError, RuntimeError):
+            pass
+
         topic_d = self._data_source.topic
 
-        self._print(f"Creating topic '{topic_d['name']}' to fdbk")
-
         self._topic_id = self._client.add_topic(**topic_d)
+        self._print(created_topic(topic_d, self._topic_id))
 
     def _print(self, *args, **kwargs):
         if self._verbose:
