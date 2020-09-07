@@ -62,7 +62,7 @@ class DBConnection:
                 the same topic id and timestamp. Disabled by default.
 
         Returns:
-            None
+            timestamp of the created data point as ISO 8601 string
 
         Raises:
             AssertionError: Topic is a template topic, topic already has data

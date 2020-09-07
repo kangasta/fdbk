@@ -7,6 +7,7 @@ from functools import reduce
 from time import sleep
 
 from fdbk import utils
+from fdbk.utils.messages import *
 
 
 def _add(a, b):
@@ -104,7 +105,10 @@ class Reporter:
         data_source: Data source to get topic details and new data.
             Is only used with start method.
             Must be set if topic_id not provided.
-        db_connection: DB connection to use.
+        db_connection: DB connection to use. Instead of passing in an
+            connection instance db_plugin and db_parameters can be used to
+            create the connection.
+        db_plugin: Name of the DB connection to import or use.
         db_parameters: Parameters for db_connection.
             See connection documentation for details.
         topic_id: ID of topic to push data to.
@@ -120,7 +124,8 @@ class Reporter:
     def __init__(
             self,
             data_source=None,
-            db_connection='',
+            db_connection=None,
+            db_plugin='',
             db_parameters=None,
             topic_id=None,
             verbose=False,
@@ -139,15 +144,17 @@ class Reporter:
         self._verbose = verbose
         self._print_fn = print_fn
 
-        self._create_client(db_connection, db_parameters)
+        self._create_client(db_connection, db_plugin, db_parameters)
         if self._topic_id is None:
             self._create_topic()
 
-    def _create_client(self, db_connection, db_parameters):
-        self._client = utils.create_db_connection(
-            db_connection, db_parameters)
-        self._print(f"Created fdbk DB connection of type "
-                    f"'{db_connection}' with parameters {str(db_parameters)}")
+    def _create_client(self, db_connection, db_plugin, db_parameters):
+        if db_connection:
+            self._client = db_connection
+        else:
+            self._client = utils.create_db_connection(
+                db_plugin, db_parameters)
+            self._print(created_connection(db_plugin, db_parameters))
 
     def _create_topic(self):
         if not self._data_source:

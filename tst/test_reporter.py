@@ -77,18 +77,26 @@ class ReporterTest(TestCase):
     def test_raises_error_with_invalid_db_connection(self):
         DS = TestDataSource([0], 1)
         with self.assertRaises(RuntimeError):
-            R = Reporter(DS, 'NoConnection')
+            R = Reporter(DS, db_plugin='NoConnection')
 
     def test_creates_topic_on_init(self):
         DS = TestDataSource([1,2,3], 3)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         C = R.connection
+        self.assertEqual(C.get_topic(R.topic_id)["name"], "topic")
+        self.assertEqual(C.get_topic(R.topic_id)["fields"], ["number"])
+
+    def test_can_use_existing_connection(self):
+        DS = TestDataSource([1,2,3], 3)
+        C = DictConnection()
+        R = Reporter(DS, db_connection=C)
+
         self.assertEqual(C.get_topic(R.topic_id)["name"], "topic")
         self.assertEqual(C.get_topic(R.topic_id)["fields"], ["number"])
 
     def test_reports_data_until_None(self):
         DS = TestDataSource([1,2,3], 3)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.start(interval=0, num_samples=1)
 
         C = R.connection
@@ -96,12 +104,12 @@ class ReporterTest(TestCase):
 
     def test_start_method_catches_ctrl_c(self):
         DS = TestDataSource([], 5)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.start(interval=0, num_samples=1)
 
     def test_start_supports_non_numeric_values(self):
         DS = TestDataSource(['qwe', 'asd', 'zxc'], 3)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.start(interval=0, num_samples=1)
 
         C = R.connection
@@ -110,7 +118,7 @@ class ReporterTest(TestCase):
 
     def test_provides_averaging_over_push_interval(self):
         DS = TestDataSource([0, 2, 4, 6, 8, 10], 6)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.start(interval=0, num_samples=6)
 
         C = R.connection
@@ -121,7 +129,7 @@ class ReporterTest(TestCase):
     def test_averaging_ignores_samples_with_none(self):
         # TODO check for warning
         DS = TestDataSource([0, 2, None, 6, None, 10], 6)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.start(interval=0, num_samples=6)
 
         C = R.connection
@@ -131,7 +139,7 @@ class ReporterTest(TestCase):
 
     def test_averaging_wont_push_if_no_valid_samples(self):
         DS = TestDataSource([None, None, None], 3)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.start(interval=0, num_samples=6)
 
         C = R.connection
@@ -141,7 +149,7 @@ class ReporterTest(TestCase):
     @patch.object(DictConnection, 'add_data', side_effect=RuntimeError("Test error"))
     def test_averaging_wont_pass_through_exception_on_failed_push(self, mock):
         DS = TestDataSource([1,2,3], 3)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.start(interval=0, num_samples=1)
 
         C = R.connection
@@ -154,14 +162,14 @@ class ReporterTest(TestCase):
     @patch.object(DictConnection, 'add_data')
     def test_push_is_skipped_on_empty_data(self, mock):
         DS = TestDataSource([1,2,3], 3)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         R.push()
 
         mock.assert_not_called()
 
     def test_provides_push_method(self):
         DS = TestDataSource([], 0)
-        R = Reporter(DS, 'DictConnection')
+        R = Reporter(DS, db_plugin='DictConnection')
         for i in range(3):
             R.push({'number': i})
 
@@ -173,18 +181,18 @@ class ReporterTest(TestCase):
         print_mock = Mock()
 
         DS = TestDataSource([], 0)
-        R = Reporter(DS, 'DictConnection', verbose=False, print_fn=print_mock)
+        R = Reporter(DS, db_plugin='DictConnection', verbose=False, print_fn=print_mock)
         R._print('asd')
         print_mock.assert_not_called()
 
-        R = Reporter(DS, 'DictConnection', verbose=True, print_fn=print_mock)
+        R = Reporter(DS, db_plugin='DictConnection', verbose=True, print_fn=print_mock)
         R._print('asd')
         print_mock.assert_called()
 
     @patch.object(DictConnection, 'add_data')
     def test_push_automatically_on_report_for_num_samples(self, add_mock):
         DS = TestDataSource([], 0)
-        R = Reporter(DS, 'DictConnection', verbose=False, num_samples=2)
+        R = Reporter(DS, db_plugin='DictConnection', verbose=False, num_samples=2)
 
         for i in range(5):
             R.report(dict(a=1))
@@ -196,7 +204,7 @@ class ReporterTest(TestCase):
     @patch.object(DictConnection, 'add_data')
     def test_push_automatically_on_report_for_interval(self, add_mock):
         DS = TestDataSource([], 0)
-        R = Reporter(DS, 'DictConnection', verbose=False, interval=120)
+        R = Reporter(DS, db_plugin='DictConnection', verbose=False, interval=120)
 
         for i in range(1,10):
             with freeze_time(datetime(2020,1,1,1,i)):
@@ -211,16 +219,16 @@ class ReporterTest(TestCase):
 
     def test_topic_creation_fails_without_data_source(self):
         with self.assertRaises(ValueError):
-            R = Reporter(None, 'DictConnection')
+            R = Reporter(None, db_plugin='DictConnection')
 
     def test_data_collection_fails_without_data_source(self):
-        R = Reporter(None, 'DictConnection', topic_id='123')
+        R = Reporter(None, db_plugin='DictConnection', topic_id='123')
 
         with self.assertRaises(ValueError):
             R.start()
 
     def test_data_can_be_pushed_to_existing_topic(self):
-        R = Reporter(None, 'DictConnection', topic_id='TBD')
+        R = Reporter(None, db_plugin='DictConnection', topic_id='TBD')
         topic_id = R.connection.add_topic(**TestDataSource([],0).topic)
         R._topic_id = topic_id
 

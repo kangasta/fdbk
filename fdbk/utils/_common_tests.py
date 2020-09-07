@@ -91,7 +91,8 @@ class CommonTest:
             "topic",
             description="description",
             fields=["number"])
-        self.C.add_data(topic_id, {"number": 3})
+        timestamp = self.C.add_data(topic_id, {"number": 3})
+        self.assertIsNotNone(timestamp)
         self.assertEqual(self.C.get_data(topic_id)[0]["number"], 3)
         self.assertEqual(len(self.C.get_data(topic_id)), 1)
 
@@ -101,9 +102,11 @@ class CommonTest:
             description="description",
             fields=["number"])
         timestamp = datetime(2020, 1, 1, 1, 0)
-        self.C.add_data(topic_id, {
+        created = self.C.add_data(topic_id, {
             "number": 3,
             "timestamp": timestamp})
+
+        self.assertEqual(created, f'{timestamp.isoformat()}Z')
 
         with self.assertRaises(AssertionError):
             self.C.add_data(topic_id, {

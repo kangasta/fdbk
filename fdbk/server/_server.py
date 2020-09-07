@@ -6,22 +6,25 @@ import logging
 from flask import Flask, jsonify, request
 
 from fdbk.utils import create_db_connection
+from fdbk.utils.messages import *
 from ._server_handlers import ServerHandlers
 
 
-def generate_app(db_plugin, db_parameters, log_level=logging.WARN):
+def generate_app(
+        db_connection=None,
+        db_plugin='',
+        db_parameters=None,
+        log_level=logging.WARN):
     app = Flask(__name__)
+    app.logger.setLevel(log_level)  # pylint: disable=no-member
 
-    db_connection = create_db_connection(
-        db_plugin, db_parameters)
+    if not db_connection:
+        db_connection = create_db_connection(
+            db_plugin, db_parameters)
+        app.logger.info(created_connection(  # pylint: disable=no-member
+            db_plugin, db_parameters))
 
     handlers = ServerHandlers(db_connection)
-
-    app.logger.setLevel(log_level)  # pylint: disable=no-member
-    app.logger.info('Created "' +  # pylint: disable=no-member
-                    db_plugin +
-                    '" with parameters: ' +
-                    str(db_parameters))
 
     def _jsonify(response):
         data, code = response
@@ -30,7 +33,7 @@ def generate_app(db_plugin, db_parameters, log_level=logging.WARN):
     @app.route('/topics', methods=['GET', 'POST'])
     def topics():
         if request.method == 'GET':
-            return _jsonify(handlers.get_topics(request.args.get('type')))
+            return _jsonify(handlers.get_topics(request.args))
         if request.method == 'POST':
             try:
                 json_in = request.get_json()

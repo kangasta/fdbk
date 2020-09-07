@@ -10,7 +10,8 @@ from fdbk.utils import (
     generate_data_response,
     generate_topic_dict,
     generate_topic_response,
-    generate_topics_list)
+    generate_topics_list,
+    timestamp_as_str)
 from fdbk.utils.messages import *
 
 
@@ -79,6 +80,8 @@ class DictConnection(DBConnection):
         except StopIteration:
             self._dict[topic_id].append(data)
 
+        return timestamp_as_str(data['timestamp'])
+
     def get_topics_without_templates(self, type_=None, template=None):
         topics = self._dict["topics"]
         if type_:
@@ -99,7 +102,7 @@ class DictConnection(DBConnection):
         return generate_topic_response(self._get_topic_dict(topic_id))
 
     def get_data(self, topic_id, since=None, until=None, limit=None):
-        topic_d = self._get_topic_dict(topic_id)
+        topic_d = self.get_topic(topic_id)
         fields = topic_d["fields"]
         data = self._dict[topic_id]
 

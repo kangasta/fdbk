@@ -44,7 +44,7 @@ if args.cors and not cors_supported:
     print("To enable CORS, install flask_cors.")
     sys.exit()
 
-app = generate_app(args.db_connection, args.db_parameters, log_level=logging.INFO)
+app = generate_app(db_plugin=args.db_connection, db_parameters=args.db_parameters, log_level=logging.INFO)
 
 if args.cors and cors_supported:
     CORS(app)

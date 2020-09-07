@@ -53,6 +53,13 @@ def _get_overwrite(query_args):
     return overwrite_str.lower() == "true"
 
 
+def _get_topics_parameters(query_args):
+    if not query_args:
+        return []
+
+    return query_args.get('type'), query_args.get('template')
+
+
 class ServerHandlers:
     def __init__(self, db_connection):
         self._db_connection = db_connection
@@ -86,24 +93,26 @@ class ServerHandlers:
     def add_data(self, topic_id, json_in, query_args=None):
         overwrite = _get_overwrite(query_args)
         try:
-            self._db_connection.add_data(
+            timestamp = self._db_connection.add_data(
                 topic_id, json_in, overwrite=overwrite)
         except KeyError as error:
             # Topic not defined
             return {
                 "error": str(error)
             }, 404
-        except ValueError as error:
-            # Fields do not match with topic
+        except (ValueError, AssertionError,) as error:
+            # Fields do not match with topic or duplicate timestamp
             return {
                 "error": str(error)
             }, 400
         return {
+            "timestamp": timestamp,
             "success": "Data successfully added to DB"
         }, 200
 
-    def get_topics(self, type_=None):
-        return self._db_connection.get_topics(type_), 200
+    def get_topics(self, query_args=None):
+        params = _get_topics_parameters(query_args)
+        return self._db_connection.get_topics(*params), 200
 
     def get_topic(self, topic_id):
         return _get_response_or_not_found(
