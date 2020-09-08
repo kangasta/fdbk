@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 
 from fdbk.utils import (
     create_db_connection,
+    generate_topic_response,
     get_connection_argparser,
     get_reporter_argparser,
     process_db_parameters)
@@ -44,3 +45,10 @@ class UtilsTest(TestCase):
         backup = "/home/user/.fdbk-topics.json"
         c = create_db_connection("dict", [f"topics_db_backup={backup}"])
         self.assertEqual(c._topics_backup, backup)
+
+    def test_generate_topic_response(self):
+        response = generate_topic_response(dict(name='name', id='id'))
+
+        self.assertEqual(response.get('name'), 'name')
+        self.assertEqual(response.get('id'), 'id')
+        self.assertIsNone(response.get('template'), None)

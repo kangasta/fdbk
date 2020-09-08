@@ -156,7 +156,7 @@ def generate_topic_response(topic):
     '''
     topic_d = {}
     for field in TOPIC_FIELDS:
-        topic_d[field] = topic[field]
+        topic_d[field] = topic.get(field)
     return topic_d
 
 
