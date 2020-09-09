@@ -1,0 +1,25 @@
+version: "3.4"
+services:
+  api:
+    build: ./api/
+    command:
+    - --db-connection
+    - fdbk_mongodb_plugin
+    - mongodb://db
+  ui:
+    build: ./ui/
+    ports:
+    - 8080:80
+  reporter:
+    build: .
+    command:
+    - -v
+    - -i
+    - "15"
+    - -n
+    - "3"
+    - --db-connection
+    - fdbk_mongodb_plugin
+    - mongodb://db
+  db:
+    image: mongo:4-bionic
