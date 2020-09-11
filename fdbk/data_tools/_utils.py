@@ -184,7 +184,12 @@ def post_process(statistics):
     return _process(funcs, statistics)
 
 
-def run_data_tools(topic_d, data, aggregate_to=None, aggregate_with=None):
+def run_data_tools(
+        topic_d,
+        data,
+        aggregate_to=None,
+        aggregate_with=None,
+        aggregate_always=False):
     results = []
     warnings = []
 
@@ -194,7 +199,7 @@ def run_data_tools(topic_d, data, aggregate_to=None, aggregate_with=None):
 
     if aggregate_to:
         chart_data, aggregate_warnings = aggregate(
-            data, aggregate_to, aggregate_with)
+            data, aggregate_to, aggregate_with, aggregate_always)
         warnings.extend(aggregate_warnings)
     else:
         chart_data = data
