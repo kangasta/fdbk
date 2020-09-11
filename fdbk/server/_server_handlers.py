@@ -4,6 +4,10 @@
 from dateutil.parser import isoparse
 
 
+def _parse_boolean(param):
+    return str(param).lower() == 'true'
+
+
 def _parse_param(param, parser):
     try:
         return parser(param)
@@ -22,8 +26,13 @@ def parse_filter_parameters(args, include_aggregate=False):
         return query
 
     aggregate = dict(
-        aggregate_to=_parse_param(args.get('aggregate_to'), int),
-        aggregate_with=args.get('aggregate_with')
+        aggregate_to=_parse_param(
+            args.get('aggregate_to'),
+            int),
+        aggregate_with=args.get('aggregate_with'),
+        aggregate_always=_parse_param(
+            args.get('aggregate_always'),
+            _parse_boolean),
     )
 
     return {**aggregate, **query}

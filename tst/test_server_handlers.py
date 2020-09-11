@@ -1,4 +1,5 @@
 from datetime import datetime
+from dateutil.parser import isoparse
 from dateutil.tz import tzutc
 
 from unittest import TestCase
@@ -7,6 +8,8 @@ from unittest.mock import Mock, patch
 from fdbk import DictConnection
 from fdbk.server import parse_filter_parameters, ServerHandlers, generate_app
 from fdbk.server._server_handlers import _get_overwrite
+
+from test_data_tools import AGGREGATE_ALWAYS_DATA, AGGREGATE_ALWAYS_TOPIC
 
 class ServerHandlersTest(TestCase):
     def _assert_status(self, expected_status, function, *args, **kwargs):
@@ -100,7 +103,6 @@ class ServerHandlersTest(TestCase):
         data = response["statistics"][0]["payload"]["data"]["datasets"][0]["data"]
         self.assertLessEqual(len(data), 3)
 
-
     def test_add_data_validations(self):
         s = ServerHandlers(DictConnection())
 
@@ -115,3 +117,22 @@ class ServerHandlersTest(TestCase):
         self._assert_status(404, s.get_topic, None)
         topic_id = self._create_topic(s, dict(name="topic", fields=["number"]))
         self._assert_status(200, s.get_topic, topic_id)
+
+    def test_aggregate(self):
+        s = ServerHandlers(DictConnection())
+        topic_id = self._create_topic(s, AGGREGATE_ALWAYS_TOPIC)
+        for data in AGGREGATE_ALWAYS_DATA:
+            data['timestamp'] = isoparse(data['timestamp']).replace(tzinfo=None)
+            self._assert_status(200, s.add_data, topic_id, data)
+
+        tests = [
+            (s.get_summary, (topic_id, dict(aggregate_to="5", aggregate_with='sum')), 4),
+            (s.get_summary, (topic_id, dict(aggregate_to="5", aggregate_with='sum', aggregate_always="tRuE")), 2),
+            (s.get_overview, (None, dict(aggregate_to="5", aggregate_with='sum')), 4),
+            (s.get_overview, (None, dict(aggregate_to="5", aggregate_with='sum', aggregate_always="True")), 2),
+        ]
+
+        for fn, params, count in tests:
+            data = self._assert_status(200, fn, *params)
+            aggregated = data['statistics'][0]['payload']['data']['datasets'][0]['data']
+            self.assertEqual(len(aggregated), count)

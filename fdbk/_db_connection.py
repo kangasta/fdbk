@@ -212,7 +212,8 @@ class DBConnection:
             until=None,
             limit=None,
             aggregate_to=None,
-            aggregate_with=None):
+            aggregate_with=None,
+            aggregate_always=False):
         '''Get summary of the topic data
 
         Args:
@@ -222,6 +223,8 @@ class DBConnection:
             limit: Number of entries to include from the most recent
             aggregate_to: Aggregate data into specified number of data points
             aggregate_with: Aggregate data with speficied function
+            aggregate_always: Aggregate data even if datas length is
+                shorter than aggregate_to value. Disabled by default.
 
         Returns:
             Dictionary with summary of the topic
@@ -242,7 +245,7 @@ class DBConnection:
         }
 
         results, warnings = run_data_tools(
-            topic_d, data_d, aggregate_to, aggregate_with)
+            topic_d, data_d, aggregate_to, aggregate_with, aggregate_always,)
         summary_d["warnings"].extend(warnings)
 
         results, warnings = post_process(results)
@@ -258,9 +261,15 @@ class DBConnection:
             until=None,
             limit=None,
             aggregate_to=None,
-            aggregate_with=None):
+            aggregate_with=None,
+            aggregate_always=False):
         data_d = self.get_data(topic_d.get("id"), since, until, limit)
-        return run_data_tools(topic_d, data_d, aggregate_to, aggregate_with)
+        return run_data_tools(
+            topic_d,
+            data_d,
+            aggregate_to,
+            aggregate_with,
+            aggregate_always)
 
     def _run_data_tools_for_many(self,
                                  topic_ids=None,
@@ -269,7 +278,8 @@ class DBConnection:
                                  until=None,
                                  limit=None,
                                  aggregate_to=None,
-                                 aggregate_with=None):
+                                 aggregate_with=None,
+                                 aggregate_always=False):
         executor = ThreadPoolExecutor()
         warnings = []
 
@@ -293,7 +303,14 @@ class DBConnection:
         }
 
         jobs = []
-        params = (since, until, limit, aggregate_to, aggregate_with,)
+        params = (
+            since,
+            until,
+            limit,
+            aggregate_to,
+            aggregate_with,
+            aggregate_always,
+        )
         for topic_d in topics.values():
             jobs.append(
                 executor.submit(
@@ -324,7 +341,8 @@ class DBConnection:
             until=None,
             limit=None,
             aggregate_to=None,
-            aggregate_with=None):
+            aggregate_with=None,
+            aggregate_always=False):
         '''Get overview of the data
 
         Args:
@@ -337,6 +355,8 @@ class DBConnection:
             limit: Number of entries to include from the most recent
             aggregate_to: Aggregate data into specified number of data points
             aggregate_with: Aggregate data with speficied function
+            aggregate_always: Aggregate data even if datas length is
+                shorter than aggregate_to value. Disabled by default.
 
         Returns:
             Dictionary with overview of the topics data
@@ -351,7 +371,8 @@ class DBConnection:
             until=until,
             limit=limit,
             aggregate_to=aggregate_to,
-            aggregate_with=aggregate_with)
+            aggregate_with=aggregate_with,
+            aggregate_always=aggregate_always)
 
 
 ConnectionClass = DBConnection

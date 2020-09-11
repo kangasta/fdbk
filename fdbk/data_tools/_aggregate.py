@@ -21,7 +21,20 @@ def _get_keys(data_point):
     return [key for key in data_point if key != 'timestamp']
 
 
-def aggregate(data, aggregate_to, aggregate_with=None):
+def aggregate(data, aggregate_to, aggregate_with=None, aggregate_always=False):
+    '''Aggregate data to less data points
+
+    Args:
+        data: Data before aggregation
+        aggregate_to: Number of data points to aggregate data to.
+        aggregate_with: Value function to use to when combining data-points.
+            Defaults to average.
+        aggregate_always: If true, data is aggregated even if datas length is
+            shorter than aggregate_to value. Disabled by default.
+
+    Returns:
+        List of aggregated data-points
+    '''
     if not aggregate_with:
         aggregate_with = 'average'
 
@@ -31,6 +44,9 @@ def aggregate(data, aggregate_to, aggregate_with=None):
     if not data:
         warnings.append(no_data())
         return ([], warnings,)
+
+    if len(data) <= aggregate_to and not aggregate_always:
+        return (data, warnings,)
 
     if aggregate_with not in VALUE_FUNCS:
         warnings.append(method_not_supported(aggregate_with))
