@@ -312,6 +312,9 @@ class DBConnection:
             aggregate_always,
         )
         for topic_d in topics.values():
+            if topic_d["type"] == "template":
+                continue
+
             jobs.append(
                 executor.submit(
                     self._get_topic_statistics, topic_d, *params))
