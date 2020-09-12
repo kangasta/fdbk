@@ -56,8 +56,8 @@ class NetStatus(object):
             data['elapsed'] = (response.elapsed / timedelta(microseconds=1)) / 1000.0
             data['status_code'] = response.status_code
         except ReadTimeout:
-            data[name + '_elapsed'] = self._timeout * 1000.0
-            data[name + '_status_code'] = None
+            data['elapsed'] = self._timeout * 1000.0
+            data['status_code'] = None
 
         return data
 
@@ -66,6 +66,7 @@ if __name__ == '__main__':
         parser = get_reporter_argparser()
 
         parser.add_argument("--target", "-t", action="append", default=[], type=str, nargs=2, metavar=("name","url"), help="Add target to monitor.")
+        parser.add_argument("--timeout", default=3, type=float, help="Timeout for network requests.")
         parser.add_argument("--target-file", "-f", type=str, help="Add targets from json file to monitor.")
         args = parser.parse_args()
 
@@ -77,7 +78,7 @@ if __name__ == '__main__':
             targets_file = []
 
         targets = targets_cmd + targets_file
-        data_sources = (NetStatus(target) for target in targets)
+        data_sources = (NetStatus(target, args.timeout) for target in targets)
 
         db_connection = create_db_connection(args.db_connection, args.db_parameters)
 
