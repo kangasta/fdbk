@@ -308,3 +308,18 @@ class DBConnectionTest(TestCase):
         result = C.get_summary(topic_id, aggregate_to=3)
         data = result["statistics"][0]["payload"]["data"]["datasets"][0]["data"]
         self.assertEqual(len(data), 3)
+
+    def test_overview_ignores_templates(self):
+        data_tools = [
+            {"field":"number", "method":"line"},
+        ]
+
+        units_d = {"field":"number", "unit":"scalar"}
+
+        C = DictConnection()
+        C.add_topic("Test template", type_str="template", fields=['number'], units=[units_d], data_tools=data_tools)
+        C.add_topic("Test topic", template="Test template")
+
+        data = C.get_overview()
+        self.assertEqual(len(data["warnings"]), 1)
+        self.assertNotIn(data["warnings"][0], "template")
