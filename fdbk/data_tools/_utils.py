@@ -152,7 +152,7 @@ def process_collections(statistics):
 
         target_d[name]["metadata"] = {
             **target_d[name].get("metadata", {}),
-            **i.get("metadata")}
+            **i.get("metadata", {})}
 
     result = _parse_collections_dict(collections) + other
     return (result, warnings,)
@@ -184,6 +184,21 @@ def post_process(statistics):
     return _process(funcs, statistics)
 
 
+def _get_warnings_from_metadata(statistic):
+    if not statistic:
+        return []
+
+    metadata = statistic.get("metadata")
+    if not metadata:
+        return []
+
+    warnings = metadata.get("warnings")
+    if not warnings:
+        return []
+
+    return list(warnings)
+
+
 def run_data_tools(
         topic_d,
         data,
@@ -213,11 +228,18 @@ def run_data_tools(
             continue
         is_chart = instruction["method"] in CHART_FUNCS
 
-        result = data_functions[instruction.get("method")](
-            data if not is_chart else chart_data,
-            instruction.get("field"),
-            instruction.get("parameters")
-        )
+        try:
+            result = data_functions[instruction.get("method")](
+                data if not is_chart else chart_data,
+                instruction.get("field"),
+                instruction.get("parameters")
+            )
+        except ValueError as error:
+            warnings.append(str(error))
+            result = None
+
+        warnings.extend(_get_warnings_from_metadata(result))
+
         if result is not None:
             result["payload"]["topic_name"] = topic_d["name"]
             if instruction.get("metadata"):

@@ -1,8 +1,11 @@
+from os import path
 from unittest import TestCase
 from unittest.mock import Mock, patch
+import yaml
 
-from fdbk.data_tools import aggregate, functions, run_data_tools
+from fdbk.data_tools import aggregate, functions, run_data_tools, post_process
 from fdbk.utils.messages import method_not_supported, no_data
+from fdbk.validate import validate_statistics_array
 
 def _test_timestamp(i, timestamps=None):
     if timestamps:
@@ -12,6 +15,7 @@ def _test_timestamp(i, timestamps=None):
 def generate_test_data(N=10, timestamps=None):
     return [dict(number=i, number2=i*2, letter=chr(ord('A') + i), timestamp=_test_timestamp(i, timestamps)) for i in range(N)]
 
+STATUS_TOPIC = dict(name='Test status', fields=["number", "number2", "letter"], units=[], data_tools=[])
 AGGREGATE_ALWAYS_TOPIC = dict(
     name="Aggregate test",
     fields=["number", "number2", "letter"],
@@ -61,6 +65,76 @@ class DataToolsTest(TestCase):
 
             self.assertEqual(result.get('payload').get('type'), type_)
             self.assertEqual(result.get('payload').get('value'), value)
+
+    def test_status_functions(self):
+        topic_d = STATUS_TOPIC
+        data = generate_test_data()
+
+        self.assertIsNone(functions.get('status')(data, 'number'))
+
+        with open(path.join(path.dirname(__file__), 'status_functions_testdata.yaml')) as f:
+            tests = yaml.safe_load(f)['tests']
+
+        for kwargs, status in tests:
+            result = functions.get('status')(data, 'number', **kwargs)
+            self.assertEqual(result.get('payload').get('status'), status, msg=str(kwargs))
+
+            topic_d['data_tools'] = [dict(field='number', method='status', **kwargs)]
+            results, warnings = run_data_tools(topic_d, data)
+            validate_statistics_array(results)
+            self.assertEqual(len(results), 1)
+            self.assertEqual(results[0].get('payload').get('status'), status, msg=str(kwargs))
+            self.assertEqual(len(warnings), 0)
+
+    def test_status_functions_warnings(self):
+        topic_d = STATUS_TOPIC
+        data = generate_test_data()
+
+        with open(path.join(path.dirname(__file__), 'status_functions_testdata.yaml')) as f:
+            tests = yaml.safe_load(f)['warnings_tests']
+
+        for kwargs, text in tests:
+            topic_d['data_tools'] = [dict(field='number', method='status', **kwargs)]
+            results, warnings = run_data_tools(topic_d, data)
+
+            self.assertEqual(len(warnings), 1)
+            self.assertIn(text, warnings[0])
+
+    def test_status_functions_in_collection(self):
+        topic_d = STATUS_TOPIC
+        data = generate_test_data()
+
+        parameters = dict(method="status", name="Test table", parameters={
+            "method": "latest",
+            "default": "ERROR",
+            "checks": [
+                {"status": "SUCCESS", "operator": "and", "gte": 9, }
+            ]
+        })
+        topic_d['data_tools'] = [dict(field='number', method='table_item', parameters=parameters)]
+
+        results, warnings = run_data_tools(topic_d, data)
+        self.assertEqual(len(warnings), 0)
+
+        results, warnings = post_process(results)
+        self.assertEqual(len(warnings), 0)
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(
+            results[0]['payload']['data'][0]['data'][0]['payload']['status'],
+            'SUCCESS')
+
+    def test_invalid_functions_in_collection(self):
+        topic_d = STATUS_TOPIC
+        data = generate_test_data()
+
+        parameters = dict(method="bear", name="Test invalid")
+        topic_d['data_tools'] = [dict(field='number', method='table_item', parameters=parameters)]
+
+        results, warnings = run_data_tools(topic_d, data)
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0], method_not_supported('bear'))
+        self.assertEqual(len(results), 0)
 
     def test_aggregate(self):
         data = generate_test_data(51)

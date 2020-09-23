@@ -8,3 +8,4 @@ pylint
 coverage
 freezegun
 mock
+pyyaml

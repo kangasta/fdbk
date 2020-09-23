@@ -1,0 +1,72 @@
+# These tests assume data is numbers from 0 to 9
+tests:
+# List of (kwargs, expected status) tuples
+- - parameters:
+      method: max
+      default: SUCCESS
+      checks:
+      - status: ERROR
+        gt: 5
+  - ERROR
+- - parameters:
+      method: average
+      default: ERROR
+      checks:
+      - status: WARNING
+        operator: and
+        gte: 4
+        lte: 6
+  - WARNING
+- - parameters:
+      method: max
+      default: ERROR
+      checks:
+      - status: WARNING
+        in: [9]
+  - WARNING
+- - parameters:
+      method: min
+      default: ERROR
+      checks:
+      - status: WARNING
+        lte: 3
+      - status: SUCCESS
+        lt: 1
+  - SUCCESS
+- - parameters:
+      method: min
+      default: ERROR
+      short_circuit: yes
+      checks:
+      - status: WARNING
+        lte: 3
+      - status: SUCCESS
+        lt: 1
+  - WARNING
+- - parameters:
+      method: average
+      default: ERROR
+      checks:
+      - status: WARNING
+        operator: and
+        gte: 4
+        lte: 6
+  - WARNING
+warnings_tests:
+# List of (kwargs, warning contains) tuples
+- - parameters:
+      method: cow
+      default: SUCCESS
+      checks:
+      - status: ERROR
+        gt: 5
+  - cow
+- - parameters:
+      method: average
+      default: ERROR
+      checks:
+      - status: WARNING
+        operator: horse
+        gte: 4
+        lte: 6
+  - horse

@@ -14,3 +14,7 @@ def chart_dict(**kwargs):
 
 def value_dict(**kwargs):
     return statistics_dict("value", **kwargs)
+
+
+def status_dict(**kwargs):
+    return statistics_dict("status", **kwargs)

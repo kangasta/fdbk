@@ -36,6 +36,40 @@
         "payload"
       ]
     },
+    "status": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "status"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "field": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "topic_name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "field",
+            "status",
+            "topic_name"
+          ]
+        },
+        "metadata": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "type",
+        "payload"
+      ]
+    },
     "chart_dataset": {
       "type": "object",
       "properties": {
@@ -114,6 +148,9 @@
                 "$ref": "#/definitions/chart"
               },
               {
+                "$ref": "#/definitions/status"
+              },
+              {
                 "$ref": "#/definitions/value"
               }
             ]
@@ -188,6 +225,9 @@
       },
       {
         "$ref": "#/definitions/list"
+      },
+      {
+        "$ref": "#/definitions/status"
       },
       {
         "$ref": "#/definitions/table"
