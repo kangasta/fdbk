@@ -18,6 +18,9 @@
             },
             "topic_name": {
               "type": "string"
+            },
+            "unit": {
+              "type": "string"
             }
           },
           "required": [

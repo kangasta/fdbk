@@ -15,7 +15,7 @@ def _test_timestamp(i, timestamps=None):
 def generate_test_data(N=10, timestamps=None):
     return [dict(number=i, number2=i*2, letter=chr(ord('A') + i), timestamp=_test_timestamp(i, timestamps)) for i in range(N)]
 
-STATUS_TOPIC = dict(name='Test status', fields=["number", "number2", "letter"], units=[], data_tools=[])
+STATUS_TOPIC = dict(name='Test status', fields=["number", "number2", "letter"], units=[dict(field="number", unit="scalar")], data_tools=[])
 AGGREGATE_ALWAYS_TOPIC = dict(
     name="Aggregate test",
     fields=["number", "number2", "letter"],
@@ -65,6 +65,38 @@ class DataToolsTest(TestCase):
 
             self.assertEqual(result.get('payload').get('type'), type_)
             self.assertEqual(result.get('payload').get('value'), value)
+
+    def test_collection_functions_unit(self):
+        topic_d = STATUS_TOPIC
+        data = generate_test_data()
+
+        topic_d['data_tools'] = [
+            dict(field='number', method="average"),
+            dict(field='number', method='list_item', parameters=dict(
+                name="test_list", method="average")),
+            dict(field='number', method='table_item', parameters=dict(
+                name="test_table", method="average")),
+        ]
+
+        results, warnings = run_data_tools(topic_d, data)
+        self.assertEqual(len(warnings), 0)
+
+        results, warnings = post_process(results)
+        self.assertEqual(len(warnings), 0)
+        validate_statistics_array(results)
+
+        self.assertEqual(len(results), 3)
+
+        value = next(i for i in results if i["type"] == "value")
+        self.assertEqual(
+            value["payload"]["unit"], "scalar")
+        list_ = next(i for i in results if i["type"] == "list")
+        self.assertEqual(
+            list_["payload"]["data"][0]["payload"]["unit"], "scalar")
+        table = next(i for i in results if i["type"] == "table")
+        self.assertEqual(
+            table["payload"]["data"][0]["data"][0]["payload"]["unit"], "scalar")
+
 
     def test_status_functions(self):
         topic_d = STATUS_TOPIC
