@@ -30,8 +30,21 @@ class NetStatus(object):
                 'unit': 'ms',
             }],
             "data_tools": [{
+                "field": 'status_code',
+                "method": "table_item",
+                "parameters": {"method": "status", "name": "Status", "parameters": {
+                    "method": "latest", "default": "ERROR", "checks": [
+                        {"status": "SUCCESS", "operator": "and", "gte": 200, "lt": 300, }
+                    ]
+                }}
+            },{
+                "field": 'status_code',
+                "method": "table_item",
+                "parameters": { "method": "latest", "name": "Status" }
+            },{
                 "field": 'elapsed',
-                "method": "latest",
+                "method": "table_item",
+                "parameters": { "method": "latest", "name": "Status" }
             },{
                 "field": 'elapsed',
                 "method": "line",
