@@ -103,6 +103,12 @@ def _get_clean_payload(statistic):
         topic_name = payload.pop("topic_name")
         payload["payload"]["topic_name"] = topic_name
 
+        try:
+            unit = payload.pop("unit")
+            payload["payload"]["unit"] = unit
+        except KeyError:
+            pass
+
     return payload
 
 
