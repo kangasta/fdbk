@@ -6,4 +6,5 @@ Functions to ease the simple data analysis done by the DBConnection.
 
 from .functions import *
 from ._aggregate import *
-from ._utils import *
+from ._process import *
+from ._run import *
