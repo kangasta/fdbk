@@ -1,12 +1,6 @@
-from fdbk.utils.messages import (
-    method_not_supported,
-    field_is_undefined,
-    collection_name_is_undefined,
-    no_data)
+from fdbk.utils.messages import collection_name_is_undefined
 
-from .functions import functions as data_functions, CHART_FUNCS
 from .functions.utils import chart_dict, statistics_dict
-from ._aggregate import aggregate
 
 
 def _create_chart(type_, field):
@@ -25,6 +19,15 @@ def _visualization_to_dataset(visualization):
 
 
 def process_charts(statistics):
+    '''Combine charts of same field and type to single chart
+
+    Args:
+        statistics: Iterable of statistics
+
+    Returns:
+        List of statistics where charts with same field and type combined.
+        Chart statistics are moved to the beginning of the list.
+    '''
     charts = {}
     other = []
 
@@ -123,6 +126,19 @@ def _parse_collections_dict(collections_d):
 
 
 def process_collections(statistics):
+    '''Move collection items under the matching collection
+
+    This function must be run twice for tables to be created. First run
+    combines table items in a table row and second run combines table rows into
+    a table.
+
+    Args:
+        statistics: Iterable of statistics
+
+    Returns:
+        List of statistics where collection items are moved to a collection.
+        Collection statistics are moved to the beginning of the list.
+    '''
     collections = dict(list={}, table_row={}, table={})
     other = []
     warnings = []
@@ -176,6 +192,14 @@ def _process(funcs, statistics):
 
 
 def pre_process(statistics):
+    '''Pre-process the statistics results after the data tools run
+
+    Args:
+        statistics: Iterable of statistics
+
+    Returns:
+        Pre-processed results and warnings as (results, warnings,) tuple
+    '''
     funcs = (
         process_collections,
     )
@@ -183,83 +207,16 @@ def pre_process(statistics):
 
 
 def post_process(statistics):
+    '''Post-process the statistics when combining multiple data tool runs
+
+    Args:
+        statistics: Iterable of statistics
+
+    Returns:
+        Post-processed results and warnings as (results, warnings,) tuple
+    '''
     funcs = (
         process_charts,
         process_collections,
     )
     return _process(funcs, statistics)
-
-
-def _get_warnings_from_metadata(statistic):
-    if not statistic:
-        return []
-
-    metadata = statistic.get("metadata")
-    if not metadata:
-        return []
-
-    warnings = metadata.get("warnings")
-    if not warnings:
-        return []
-
-    return list(warnings)
-
-
-def run_data_tools(
-        topic_d,
-        data,
-        aggregate_to=None,
-        aggregate_with=None,
-        aggregate_always=False):
-    results = []
-    warnings = []
-
-    if not data:
-        warnings.append(no_data(topic_d))
-        return ([], warnings,)
-
-    if aggregate_to:
-        chart_data, aggregate_warnings = aggregate(
-            data, aggregate_to, aggregate_with, aggregate_always)
-        warnings.extend(aggregate_warnings)
-    else:
-        chart_data = data
-
-    for instruction in topic_d['data_tools']:
-        if instruction["method"] not in data_functions:
-            warnings.append(method_not_supported(instruction["method"]))
-            continue
-        if instruction["field"] not in topic_d["fields"]:
-            warnings.append(field_is_undefined(instruction["field"]))
-            continue
-        is_chart = instruction["method"] in CHART_FUNCS
-
-        try:
-            result = data_functions[instruction.get("method")](
-                data if not is_chart else chart_data,
-                instruction.get("field"),
-                instruction.get("parameters")
-            )
-        except ValueError as error:
-            warnings.append(str(error))
-            result = None
-
-        warnings.extend(_get_warnings_from_metadata(result))
-
-        if result is not None:
-            result["payload"]["topic_name"] = topic_d["name"]
-            if instruction.get("metadata"):
-                result["metadata"] = instruction.get("metadata")
-            try:
-                result["payload"]["unit"] = next(
-                    i["unit"] for i in topic_d["units"] if (
-                        i["field"] == instruction["field"])
-                )
-            except StopIteration:
-                pass
-
-        results.append(result)
-
-    results, pre_warnings = pre_process(results)
-    warnings.extend(pre_warnings)
-    return (results, warnings,)

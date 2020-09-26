@@ -3,7 +3,7 @@
 
 from concurrent.futures import wait, ALL_COMPLETED, ThreadPoolExecutor
 
-from fdbk.data_tools import post_process, run_data_tools
+from fdbk.data_tools import combine_run_outputs, post_process, run_data_tools
 from fdbk.utils.messages import topic_not_found
 
 
@@ -323,13 +323,8 @@ class DBConnection:
             result_d["fields"].extend(topic_d["fields"])
 
         wait(jobs, return_when=ALL_COMPLETED)
-        results = []
-        for job in jobs:
-            new_results, warnings = job.result()
-            results.extend(new_results)
-            result_d["warnings"].extend(warnings)
 
-        results, warnings = post_process(results)
+        results, warnings = combine_run_outputs(job.result() for job in jobs)
         result_d["statistics"] = results
         result_d["warnings"].extend(warnings)
 
