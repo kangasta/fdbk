@@ -22,6 +22,8 @@ to install from sources.
 
 ## Usage
 
+See examples directory for example use cases.
+
 ### Running the server
 
 Launch development server to port 8080 with:
@@ -30,7 +32,7 @@ Launch development server to port 8080 with:
 fdbk-server -p 8080
 ```
 
-See `fdbk-server --help` for other options. The server is configured via a configuration file: see example in examples directory.
+See `fdbk-server --help` for other options.
 
 ## Testing
 
