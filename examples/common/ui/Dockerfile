@@ -5,9 +5,12 @@ WORKDIR /app
 
 RUN git clone https://github.com/kangasta/fdbk-data-display.git
 WORKDIR /app/fdbk-data-display
-RUN export TAG=$(git name-rev --tags --name-only $(git rev-parse HEAD))
-RUN export COMMIT=$(git rev-parse HEAD)
-RUN npm i && npm run build
+RUN export TAG=$(git name-rev --tags --name-only $(git rev-parse HEAD)) && \
+    export TAG=$(test $TAG != undefined && echo $TAG || echo '') && \
+    echo "TAG=$TAG" > ".env" && \
+    echo "COMMIT=$(git rev-parse HEAD)" >> ".env"
+RUN npm i && \
+    npm run build
 
 
 FROM nginx:alpine

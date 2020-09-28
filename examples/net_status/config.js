@@ -1,5 +1,5 @@
 config = {
   apiUrl: "/api/overview",
-  limit: 100,
+  limit: 1000,
   title: "Network status example"
 };
