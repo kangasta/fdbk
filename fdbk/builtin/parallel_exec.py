@@ -13,11 +13,11 @@ from fdbk.utils import (
 from fdbk import Reporter
 
 
-def timestamp(dt=None):
-    if not dt:
-        dt = datetime.utcnow()
+def timestamp(timestamp_dt=None):
+    if not timestamp_dt:
+        timestamp_dt = datetime.utcnow()
 
-    return timestamp_as_str(dt)
+    return timestamp_as_str(timestamp_dt)
 
 
 STARTED_UNIT = dict(field='started', unit='iso_8601')
