@@ -12,16 +12,28 @@ services:
     - 8080:80
     volumes:
     - ./config.js:/app/config.js
-  reporter:
+  init:
     build: .
     command:
     - -v
-    - -i
-    - "15"
-    - -n
-    - "3"
     - --db-connection
     - fdbk_mongodb_plugin
     - mongodb://db
+    - create
+    - --name
+    - Test
+    - -c
+    - python
+    - process_simulator.py
+  exec:
+    build: .
+    command:
+    - -v
+    - --db-connection
+    - fdbk_mongodb_plugin
+    - mongodb://db
+    - exec
+    - --name
+    - Test
   db:
     image: mongo:4-bionic
