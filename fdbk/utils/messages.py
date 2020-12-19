@@ -10,9 +10,9 @@ def created_connection(plugin, parameters):
         f"{str(parameters)}.")
 
 
-def created_topic(topic_d, id_):
-    topic_d = {**topic_d, "id": id_}
-    return (f"Created topic '{_topic_str(topic_d)}' to the database.")
+def created_topic(topic_d, id_=None):
+    topic_d = {"id": id_, **topic_d}
+    return (f"Created topic {_topic_str(topic_d)} to the database.")
 
 
 def collection_name_is_undefined(method, field):

@@ -217,7 +217,7 @@ def main():
                 args.command,
                 args.repeat_for,
                 args.start_in)
-            print(created_topic(topic_d, topic_d.get('id')))
+            print(created_topic(topic_d))
         except Exception:
             print('Creating topic failed.')
             exit(TOPIC_CREATION_FAILED)
