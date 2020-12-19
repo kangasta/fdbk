@@ -173,7 +173,7 @@ def get_argparser():
         nargs=REMAINDER,
         help="Command to execute. Takes in all of the remaining arguments.")
     create_parser.add_argument(
-        "--repeat_for",
+        "--repeat-for",
         type=float,
         default=60,
         help="Repeat command for given number of seconds.")
