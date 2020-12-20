@@ -21,17 +21,28 @@ OPERATORS = {
 
 
 def _get_value(method, data, field, parameters=None):
+    if method not in functions:
+        raise ValueError(method_not_supported(method))
+
     value_d = functions.get(method)(data, field, parameters)
     return value_d.get("payload", {}).get("value")
 
 
-def _get_parameters(parameters=None):
+def _get_status_parameters(parameters=None):
     default = parameters.get("default")
     checks = parameters.get("checks", [])
     short_circuit = parameters.get("short_circuit", False)
     method = parameters.get("method", "latest")
 
     return default, checks, short_circuit, method
+
+
+def _get_warning_parameters(parameters=None):
+    check = parameters.get("check")
+    message = parameters.get("message")
+    method = parameters.get("method", "latest")
+
+    return check, message, method
 
 
 def _run_assertion(assertion, value, other):
@@ -45,7 +56,7 @@ def _run_assertion(assertion, value, other):
 
 
 def _run_check(value, check):
-    status = check.get("status")
+    status = check.get("status", 'WARNING')
     operator = str(check.get("operator", 'or')).lower()
 
     result = False if operator == 'or' else True
@@ -72,12 +83,10 @@ def status(data, field, parameters=None):
 
     warnings = []
     try:
-        default, checks, short_circuit, method = _get_parameters(parameters)
+        default, checks, short_circuit, method = _get_status_parameters(
+            parameters)
     except BaseException:
         return None
-
-    if method not in functions:
-        raise ValueError(method_not_supported(method))
 
     value = _get_value(method, data, field, parameters)
 
@@ -104,6 +113,26 @@ def status(data, field, parameters=None):
     return status_dict(**status_d)
 
 
+def warning(data, field, parameters=None):
+    if not len(data):
+        return None
+
+    try:
+        check, message, method = _get_warning_parameters(parameters)
+    except BaseException:
+        return None
+
+    if not check or not message:
+        return None
+
+    value = _get_value(method, data, field, parameters)
+    warning = _run_check(value, check)
+
+    if warning:
+        raise AssertionError(message)
+
+
 STATUS_FUNCS = dict(
-    status=status
+    status=status,
+    warning=warning,
 )
