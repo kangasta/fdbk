@@ -217,3 +217,29 @@ class DataToolsTest(TestCase):
         self.assertEqual(aggregated[0]["number"], 1)
         self.assertEqual(aggregated[1]["number"], 3)
         self.assertEqual(warnings, [])
+
+    def test_warning_functions(self):
+        topic_d = STATUS_TOPIC
+        data = generate_test_data()
+
+        for check, expected in [
+            (dict(operator='and', gte=4, lte=6), ["Test warning"]),
+            (dict(operator='and', gte=6, lte=4), []),
+        ]:
+            parameters=dict(
+                method="average",
+                message="Test warning",
+                check=check,
+            )
+
+            topic_d['data_tools'] = [
+                dict(field='number', method="warning", parameters=parameters),
+            ]
+
+            results, warnings = run_data_tools(topic_d, data)
+
+            self.assertEqual(len(results), 0)
+            self.assertEqual(len(warnings), len(expected))
+
+            if expected:
+                self.assertEqual(warnings[0], "Test warning")

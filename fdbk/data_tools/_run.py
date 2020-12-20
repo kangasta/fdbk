@@ -94,7 +94,7 @@ def run_data_tools(
                 instruction.get("field"),
                 instruction.get("parameters")
             )
-        except ValueError as error:
+        except (AssertionError, ValueError) as error:
             warnings.append(str(error))
             result = None
 
