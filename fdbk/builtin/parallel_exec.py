@@ -1,5 +1,6 @@
 from argparse import ArgumentParser, REMAINDER
 from datetime import datetime, timedelta
+from socket import gethostname
 from subprocess import run, PIPE, STDOUT
 from time import sleep
 
@@ -11,6 +12,8 @@ from fdbk.utils import (
     create_db_connection,
     timestamp_as_str)
 from fdbk import Reporter
+
+from ._console_utils import JsonStreams, command_as_str
 
 
 def timestamp(timestamp_dt=None):
@@ -46,7 +49,7 @@ TEMPLATE_DICT = dict(
     name=TEMPLATE_NAME,
     type_str="template",
     description="Execution result.",
-    fields=['started', 'elapsed', 'exit_status', 'output'],
+    fields=['started', 'elapsed', 'exit_status', 'output', 'hostname'],
     units=[STARTED_UNIT, ELAPSED_UNIT, OUTPUT_UNIT],
     data_tools=[
         MIN_ELAPSED,
@@ -116,7 +119,31 @@ def _wait_for_start(repeat_since, interval=2):
         sleep(interval)
 
 
-def execute(db_connection, name, verbose=False, interval=2):
+def _run_command_raw(command):
+    started = datetime.utcnow()
+    process = run(command, stderr=STDOUT, stdout=PIPE)
+    elapsed = (datetime.utcnow() - started).total_seconds()
+    output = f'+ {command_as_str(command)}\n{process.stdout.decode("utf-8")}'
+
+    return (started, process, elapsed, output,)
+
+
+def _run_command_json(command):
+    with JsonStreams() as (stdout, stderr, streams):
+        streams.push('stdin', text=command_as_str(command))
+        started = datetime.utcnow()
+        process = run(command, stderr=stderr, stdout=stdout, bufsize=0)
+        elapsed = (datetime.utcnow() - started).total_seconds()
+
+    return (started, process, elapsed, streams.read(wait=True),)
+
+
+def execute(
+        db_connection,
+        name,
+        verbose=False,
+        interval=2,
+        console_as_json=False):
     print(f'Waiting for execution topic with name {name}.')
     topic_d = wait_for_topic(db_connection, name, interval)
     topic_id = topic_d.get('id')
@@ -130,15 +157,17 @@ def execute(db_connection, name, verbose=False, interval=2):
     _wait_for_start(since, interval)
     print(f'Repeating command until {timestamp(until)}.')
     while _should_repeat(until):
-        started = datetime.utcnow()
-        process = run(command, stderr=STDOUT, stdout=PIPE)
-        elapsed = (datetime.utcnow() - started).total_seconds()
+        if console_as_json:
+            started, process, elapsed, output = _run_command_json(command)
+        else:
+            started, process, elapsed, output = _run_command_raw(command)
 
         data = dict(
             started=timestamp(started),
             elapsed=elapsed,
             exit_status=process.returncode,
-            output=process.stdout.decode('utf-8'),
+            output=output,
+            hostname=gethostname(),
         )
 
         reporter.push(data)
@@ -183,6 +212,12 @@ def get_argparser():
         default=15,
         help="Start repeating command in given number of seconds.")
 
+    exec_parser.add_argument(
+        '--console-as-json',
+        action='store_true',
+        help='Push console output as json with timestamps and stream names.'
+    )
+
     parser.add_argument(
         "--verbose",
         "-v",
@@ -223,7 +258,8 @@ def main():
             exit(TOPIC_CREATION_FAILED)
     elif args.sub_command == 'exec':
         try:
-            execute(db_connection, args.name, args.verbose)
+            execute(db_connection, args.name, args.verbose,
+                    console_as_json=args.console_as_json)
         except KeyboardInterrupt:
             exit(EXEC_INTERRUPTED)
     else:
