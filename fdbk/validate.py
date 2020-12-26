@@ -10,18 +10,18 @@ except ImportError:  # pragma: no cover
     import importlib_resources as resources
 
 
-def _validate_dict(input_dict, schema_name):
+def _validate_dict(input_dict, schema_name, **kwargs):
     schema = json.loads(
         resources.read_text(
             'fdbk.schemas',
             f'{schema_name}.json'))
-    validate(instance=input_dict, schema=schema)
+    validate(instance=input_dict, schema={**schema, **kwargs})
 
 
 def validate_topic_dict(topic_d):
     '''Validate topic when creating or modifying topics
     '''
-    _validate_dict(topic_d, 'topic-in')
+    _validate_dict(topic_d, 'topic', required=['name'])
 
 
 def validate_statistics_array(statistics):

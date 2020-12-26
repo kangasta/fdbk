@@ -7,7 +7,8 @@
         "field": { "type": "string"},
         "unit": { "type": "string"}
       },
-      "required": ["field", "unit"]
+      "required": ["field", "unit"],
+      "additionalProperties": false
     },
     "data_tools": {
       "type": "object",
@@ -17,7 +18,8 @@
         "metadata": {"type": "object"},
         "parameters": {"type": "object"}
       },
-      "required": ["field", "method"]
+      "required": ["field", "method"],
+      "additionalProperties": false
     }
   },
   "type": "object",
@@ -51,6 +53,6 @@
     },
     "metadata": {"type": "object"}
   },
-  "required": ["name"],
+  "required": ["id", "name", "type", "template", "description", "fields", "units", "data_tools", "metadata"],
   "additionalProperties": false
 }
