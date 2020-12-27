@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "definitions": {
-    "units": {
+    "unit": {
       "type": "object",
       "properties": {
         "field": { "type": "string"},
@@ -10,7 +10,7 @@
       "required": ["field", "unit"],
       "additionalProperties": false
     },
-    "data_tools": {
+    "data_tool": {
       "type": "object",
       "properties": {
         "field": { "type": "string"},
@@ -45,11 +45,11 @@
     },
     "units": {
       "type": "array",
-      "items": {"$ref": "#/definitions/units"}
+      "items": {"$ref": "#/definitions/unit"}
     },
     "data_tools": {
       "type": "array",
-      "items": {"$ref": "#/definitions/data_tools"}
+      "items": {"$ref": "#/definitions/data_tool"}
     },
     "metadata": {"type": "object"}
   },
