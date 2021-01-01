@@ -19,6 +19,11 @@ def get_reporter_argparser(parser=None):
         type=int,
         help="Number of samples to average during the push interval")
     parser.add_argument(
+        "--stop-on-errors",
+        "-e",
+        action="store_true",
+        help="Stop data collection on errors. By default errors are ignored.")
+    parser.add_argument(
         "--verbose",
         "-v",
         action="store_true",

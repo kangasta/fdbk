@@ -34,9 +34,23 @@ class TestDataSource:
             num = p[i % len(p)]
         except Exception:
             raise KeyboardInterrupt
-        return {
-            "number": num
-        }
+
+        return dict(number=num)
+
+class FailingTestDataSource(TestDataSource):
+    @property
+    def data(self):
+        i = self._i
+        self._i += 1
+
+        if i >= self._n:
+            return None
+
+        p = self._pattern
+        if not i % 2:
+            return dict(number=p[i % len(p)])
+
+        raise ZeroDivisionError(f'Test error ({i})')
 
 class TestDataSourceWithTemplate:
     @property
@@ -57,9 +71,7 @@ class TestDataSourceWithTemplate:
 
     @property
     def data(self):
-        return {
-            "number": randrange(10)
-        }
+        return dict(number=randrange(10))
 
 class ReporterUtilsTest(TestCase):
     def test_add_and_div_returns_none_on_error(self):
@@ -267,3 +279,19 @@ class ReporterTest(TestCase):
         R._topic_id = topic_id
 
         R.push(dict(a=1))
+
+    def test_reporter_start_recovers_from_data_source_exception(self):
+        DS = FailingTestDataSource([1,2,3], 3)
+        R = Reporter(DS, db_plugin='DictConnection')
+        R.start(interval=0, num_samples=1)
+
+        C = R.connection
+        self.assertEqual(2, len(C.get_data(R.topic_id)))
+
+    def test_reporter_start_stop_on_errors(self):
+        DS = FailingTestDataSource([1,2,3], 3)
+        R = Reporter(DS, db_plugin='DictConnection')
+        with self.assertRaises(ZeroDivisionError) as a:
+            R.start(interval=0, num_samples=1, stop_on_errors=True)
+
+        self.assertEqual(str(a.exception), 'Test error (1)')

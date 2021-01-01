@@ -249,9 +249,16 @@ class Reporter:
         if age_trigger or num_trigger:
             self.push()
 
-    def _collect_data(self, interval, num_samples):
+    def _collect_data(self, interval, num_samples, stop_on_errors):
         for _ in range(num_samples):
-            sample = self._data_source.data
+            try:
+                sample = self._data_source.data
+            except Exception:
+                if stop_on_errors:
+                    raise
+                else:
+                    continue
+
             if sample is None:
                 raise StopIteration()
             if None not in sample.values():
@@ -260,13 +267,15 @@ class Reporter:
             if num_samples > 1:
                 sleep(float(interval) / num_samples)
 
-    def start(self, interval=360, num_samples=60):
+    def start(self, interval=360, num_samples=60, stop_on_errors=False):
         '''Start pushing data polled from data_source to fdbk
 
         Args:
             interval: Time to average before pushing to DB.
             num_samples: Number of samples to collect for averaging during the
                 interval.
+            stop_on_errors: Set to truthy value to stop data collection when
+                data source raises an exception.
 
         Raises:
             ValueError: DataSource is not defined.
@@ -277,7 +286,7 @@ class Reporter:
         try:
             while True:
                 try:
-                    self._collect_data(interval, num_samples)
+                    self._collect_data(interval, num_samples, stop_on_errors)
                 except StopIteration:
                     return
 
