@@ -62,4 +62,4 @@ if __name__ == '__main__':
     SYS_STATUS = SysStatus()
 
     REPORTER = Reporter(SYS_STATUS, db_plugin=args.db_connection, db_parameters=args.db_parameters, verbose=args.verbose)
-    REPORTER.start(interval=args.interval, num_samples=args.num_samples)
+    REPORTER.start(interval=args.interval, num_samples=args.num_samples, stop_on_errors=args.stop_on_errors)
