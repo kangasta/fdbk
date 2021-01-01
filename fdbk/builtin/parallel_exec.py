@@ -2,6 +2,7 @@ from argparse import ArgumentParser, REMAINDER
 from datetime import datetime, timedelta
 from socket import gethostname
 from subprocess import run, PIPE, STDOUT
+import re
 from time import sleep
 
 from dateutil.parser import isoparse
@@ -80,8 +81,38 @@ def create_topic_dict(name, command, repeat_for=60, start_in=15):
     )
 
 
+def _topic_matches(topic_d, name, not_expired=False):
+    if not topic_d.get('name').startswith(name):
+        return False
+
+    _, _, repeat_until = _get_execution(topic_d)
+    if not_expired and not _should_repeat(repeat_until):
+        return False
+
+    return True
+
+
+def get_latest_topic(db_connection, name, not_expired=False):
+    topics = db_connection.get_topics(template=TEMPLATE_NAME)
+    filtered_topics = [
+        i for i in topics if _topic_matches(
+            i, name, not_expired)]
+    return filtered_topics[-1]
+
+
+def _with_next_suffix(db_connection, name):
+    try:
+        latest = get_latest_topic(db_connection, name)
+        latest_i = int(re.search(r'#([0-9]+)$', latest.get('name')).group(1))
+    except (AttributeError, IndexError):
+        return f'{name} #1'
+
+    return f'{name} #{latest_i + 1}'
+
+
 def create_topic(db_connection, name, command, repeat_for=60, start_in=15):
-    topic_d = create_topic_dict(name, command, repeat_for, start_in)
+    suffixed_name = _with_next_suffix(db_connection, name)
+    topic_d = create_topic_dict(suffixed_name, command, repeat_for, start_in)
     db_connection.add_topic(**TEMPLATE_DICT, overwrite=True)
     topic_id = db_connection.add_topic(**topic_d)
     return {**topic_d, 'id': topic_id}
@@ -89,11 +120,10 @@ def create_topic(db_connection, name, command, repeat_for=60, start_in=15):
 
 def wait_for_topic(db_connection, name, interval=2):
     while True:
-        topics = db_connection.get_topics(template=TEMPLATE_NAME)
         try:
-            topic_d = next(i for i in topics if i.get('name') == name)
+            topic_d = get_latest_topic(db_connection, name, True)
             return topic_d
-        except Exception:
+        except IndexError:
             sleep(interval)
 
 
