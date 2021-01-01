@@ -99,7 +99,7 @@ if __name__ == '__main__':
 
         threads = []
         for reporter in reporters:
-            threads.append(Thread(target=reporter.start, kwargs=dict(interval=args.interval, num_samples=args.num_samples)))
+            threads.append(Thread(target=reporter.start, kwargs=dict(interval=args.interval, num_samples=args.num_samples, stop_on_errors=args.stop_on_errors)))
             threads[-1].start()
 
         for thread in threads:

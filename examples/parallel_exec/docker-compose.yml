@@ -3,6 +3,7 @@ services:
   api:
     build: ../common/api/
     command:
+    - --cors
     - --db-connection
     - fdbk_mongodb_plugin
     - mongodb://db
