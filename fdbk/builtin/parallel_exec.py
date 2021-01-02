@@ -29,18 +29,17 @@ ELAPSED_UNIT = dict(field='elapsed', unit='seconds')
 OUTPUT_UNIT = dict(field='output', unit='console')
 
 
-def _elapsed_list_params(method):
-    return dict(parameters=dict(name='Elapsed statistics', method=method))
+def _elapsed_table_params(method):
+    return dict(
+        field='elapsed',
+        method='table_item',
+        parameters=dict(name='Elapsed statistics', method=method))
 
 
-MIN_ELAPSED = dict(
-    field='elapsed', method='list_item', **_elapsed_list_params('min'))
-AVERAGE_ELAPSED = dict(
-    field='elapsed', method='list_item', **_elapsed_list_params('average'))
-MEDIAN_ELAPSED = dict(
-    field='elapsed', method='list_item', **_elapsed_list_params('median'))
-MAX_ELAPSED = dict(
-    field='elapsed', method='list_item', **_elapsed_list_params('max'))
+MIN_ELAPSED = _elapsed_table_params('min')
+AVERAGE_ELAPSED = _elapsed_table_params('average')
+MEDIAN_ELAPSED = _elapsed_table_params('median')
+MAX_ELAPSED = _elapsed_table_params('max')
 
 LINE_ELAPSED = dict(field='elapsed', method='line')
 PIE_EXIT_STATUS = dict(field='exit_status', method='doughnut')

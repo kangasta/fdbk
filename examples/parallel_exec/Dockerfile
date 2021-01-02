@@ -5,4 +5,4 @@ RUN pip install fdbk fdbk_mongodb_plugin
 WORKDIR /app
 COPY *.py ./
 
-ENTRYPOINT ["python", "-m", "fdbk.builtin.parallel_exec"]
+ENTRYPOINT ["python", "-um", "fdbk.builtin.parallel_exec"]
