@@ -25,6 +25,7 @@ services:
     - Test
     - -c
     - python
+    - -u
     - process_simulator.py
   exec:
     build: .
@@ -34,6 +35,7 @@ services:
     - fdbk_mongodb_plugin
     - mongodb://db
     - exec
+    - --console-as-json
     - --name
     - Test
   db:
