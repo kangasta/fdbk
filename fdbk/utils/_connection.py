@@ -62,7 +62,7 @@ def create_db_connection(db_plugin, db_parameters):
             "Loading or creating fdbk DB connection failed: " + str(e))
 
 
-def get_connection_argparser(parser=None):
+def get_connection_argparser(parser=None, default_db_plugin='client'):
     '''Create argparser for creating DB connections
 
     Args:
@@ -83,7 +83,7 @@ def get_connection_argparser(parser=None):
     parser.add_argument(
         "--db-connection",
         type=str,
-        default="ClientConnection",
+        default=default_db_plugin,
         help="fdbk DB connection to use (default=ClientConnection)")
 
     return parser
