@@ -1,0 +1,31 @@
+name: Performance
+on:
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  perf-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.9"
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+    - name: Run performance tests
+      run: |
+        python3 -m fdbk.utils.performance_tests | tee test_output
+    - uses: actions/github-script@v4
+      with:
+        script: |
+          const fs = require('fs');
+          const testoutput = fs.readFileSync('test_output').toString();
+
+          github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `Performance test output:\n\`\`\`txt\n${testoutput}\`\`\``
+          })

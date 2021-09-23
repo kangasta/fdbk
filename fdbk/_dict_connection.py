@@ -21,7 +21,7 @@ class DictConnection(DBConnection):
 
     def __init__(self, topics_db_backup=None):
         self._topics_backup = topics_db_backup
-        topics = []
+        topics = {}
 
         if self._topics_backup:
             try:
@@ -30,60 +30,47 @@ class DictConnection(DBConnection):
             except FileNotFoundError:
                 pass
 
-        self._dict = {
-            "topics": topics
-        }
-
-    def _topic_i(self, topic_id):
-        return next(
-            i for i, data in enumerate(
-                self._dict["topics"]) if data["id"] == topic_id)
+        self._topics = topics
+        self._data = {}
 
     def add_topic(self, name, overwrite=False, **kwargs):
         topic_d = generate_topic_dict(name, add_id=True, **kwargs)
         self.validate_template(topic_d)
+        topic_id = topic_d.get('id')
 
-        try:
-            i = self._topic_i(topic_d["id"])
-            if not overwrite:
-                raise KeyError(duplicate_topic_id(topic_d["id"]))
-            self._dict["topics"][i] = topic_d
-        except StopIteration:
-            self._dict["topics"].append(topic_d)
-            self._dict[topic_d["id"]] = []
+        if topic_id in self._topics and not overwrite:
+            raise KeyError(duplicate_topic_id(topic_id))
+
+        self._topics[topic_id] = topic_d
 
         if self._topics_backup:
             with open(expanduser(self._topics_backup), 'w') as f:
-                json.dump({'topics': self._dict["topics"]}, f)
+                json.dump(dict(topics=self._topics), f)
 
-        return topic_d["id"]
-
-    def _timestamp_i(self, topic_id, timestamp):
-        return next(
-            i for i, data in enumerate(
-                self._dict[topic_id]) if data["timestamp"] == timestamp)
+        return topic_id
 
     def add_data(self, topic_id, values, overwrite=False):
         topic_d = self.get_topic(topic_id)
         if topic_d.get('type') == 'template':
             raise AssertionError('Cannot add data to template topic.')
-        fields = topic_d["fields"]
+        fields = topic_d.get('fields')
 
         data = generate_data_entry(topic_id, fields, values)
+        timestamp = data.get('timestamp')
 
-        try:
-            i = self._timestamp_i(topic_id, data['timestamp'])
-            if not overwrite:
-                raise AssertionError(
-                    duplicate_timestamp(topic_d, data['timestamp']))
-            self._dict[topic_id][i] = data
-        except StopIteration:
-            self._dict[topic_id].append(data)
+        if self._data.get(topic_id) is None:
+            self._data[topic_id] = {}
+
+        if timestamp in self._data.get(topic_id, {}) and not overwrite:
+            raise AssertionError(
+                duplicate_timestamp(topic_d, timestamp))
+
+        self._data[topic_id][timestamp] = data
 
         return timestamp_as_str(data['timestamp'])
 
     def get_topics_without_templates(self, type_=None, template=None):
-        topics = self._dict["topics"]
+        topics = self._topics.values()
         if type_:
             topics = [i for i in topics if i.get('type') == type_]
         if template:
@@ -93,9 +80,8 @@ class DictConnection(DBConnection):
 
     def _get_topic_dict(self, topic_id):
         try:
-            return next(
-                i for i in self._dict["topics"] if i["id"] == topic_id)
-        except StopIteration:
+            return self._topics[topic_id]
+        except KeyError:
             raise KeyError(topic_not_found(topic_id))
 
     def get_topic_without_templates(self, topic_id):
@@ -104,7 +90,7 @@ class DictConnection(DBConnection):
     def get_data(self, topic_id, since=None, until=None, limit=None):
         topic_d = self.get_topic(topic_id)
         fields = topic_d["fields"]
-        data = self._dict[topic_id]
+        data = self._data.get(topic_id, {}).values()
 
         if since:
             data = (i for i in data if i.get('timestamp') >= since)

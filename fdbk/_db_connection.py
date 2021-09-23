@@ -203,7 +203,7 @@ class DBConnection:
             IndexError: Topic has no data available
 
         '''
-        return self.get_data(topic_id)[-1]
+        return self.get_data(topic_id, limit=1)[-1]
 
     def get_summary(
             self,

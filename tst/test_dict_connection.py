@@ -35,6 +35,6 @@ class DictConnectionTest(TestCase):
 
         C.get_topics()
 
-        C._dict['topics'] = C._dict['topics'][1:]
+        C._topics.pop('test_template')
         with self.assertRaises(KeyError):
             C.get_topics()
